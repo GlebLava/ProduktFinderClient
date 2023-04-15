@@ -74,54 +74,56 @@ namespace ProduktFinderClient.Commands
                 }
             }
 
+            ColumnedTable mainTable = new ColumnedTable(new string[] { "HCS-Artikel-Nr", "Bedarf", "HCS H-Artikelnr" });
+            List<ColumnedTable> apiTables = new List<ColumnedTable>();
 
-            int includedAPIsCount = filter.ModulesToSearchWith.Count;
-            int amountDefaultAttributes = 3;
-            int amountSupplierAttributes = 5;
-            int j = amountDefaultAttributes;
-            string[] headers = new string[j + (amountSupplierAttributes * includedAPIsCount)];
-            headers[0] = "HCS-Artikel-Nr";
-            headers[1] = "Bedarf";
-            headers[2] = "HCS H-Artikelnr";
+
             foreach (ModuleType moduleType in filter.ModulesToSearchWith)
             {
                 Filter.ModulesTranslation.TryGetValue(moduleType, out string supplierName);
 
-                headers[j] = "Herstellernr bei " + supplierName;
-                headers[j + 1] = "HCS H-Artikelnr == " + supplierName + "-Herstellernr";
-                headers[j + 2] = "Lagerbestand bei " + supplierName;
-                headers[j + 4] = "Preis bei " + supplierName;
-                j += amountSupplierAttributes;
+                apiTables.Add(new ColumnedTable(new string[]
+                {
+                    "Herstellernr bei " + supplierName,
+                    "HCS H-Artikelnr == " + supplierName + "-Herstellernr",
+                    "Lagerbestand bei " + supplierName,
+                    "Preis bei " + supplierName
+                }));
             }
-            ColumnedTable table = new ColumnedTable(headers);
 
             for (int i = 0; i < csv.FieldsLength; i++)
             {
                 string hcsNr = csv.GetField(i, cparams.hcs_ArtikelnummerIndex);
                 int orderAmount = ExtractIntFromOrderAmount(csv.GetField(i, cparams.bedarfIndex));
                 string keyword = csv.GetField(i, cparams.h_ArtikelnummerIndex);
-                table.AddNewRow();
-                table.SetField(i, 0, hcsNr);
-                table.SetField(i, 1, orderAmount.ToString());
-                table.SetField(i, 2, keyword);
-                int columnIndex = 0;
-
-                //                                        WICHTIG NICHT VERGESSEN
+                mainTable.AddNewRow();
+                mainTable.SetField(i, 0, hcsNr);
+                mainTable.SetField(i, 1, orderAmount.ToString());
+                mainTable.SetField(i, 2, keyword);
+                
+                
+                int tableIndex = 0;
                 foreach (ModuleType moduleType in filter.ModulesToSearchWith)
                 {
-                    columnIndex += amountSupplierAttributes;
+                    ColumnedTable table = apiTables[tableIndex];
+                    table.AddNewRow();
+                    tableIndex++;
+
                     List<Part>? answers = await RequestHandler.SearchWith(moduleType, keyword, 3, UpdateUserCallback);
                     if (answers is null || answers.Count == 0)
                         continue;
                     
-                    if (!SetTablesForOrderAmount(table, answers, orderAmount, orderAmount, i, columnIndex, amountDefaultAttributes, keyword))
-                        SetTablesForOrderAmount(table, answers, 1, orderAmount, i, columnIndex, amountDefaultAttributes, keyword);
+                    if (!SetTablesForOrderAmount(table, answers, orderAmount, orderAmount, i, keyword))
+                        SetTablesForOrderAmount(table, answers, 1, orderAmount, i, keyword);
                 }
             }
 
+            apiTables.Insert(0, mainTable);
+            ColumnedTable combinedTable = ColumnedTable.Combine(apiTables.ToArray());
+
             using (StreamWriter sw = File.CreateText(cparams.savePath))
             {
-                sw.Write(table.ConvertToCSVString(new StringBuilder()));
+                sw.Write(combinedTable.ConvertToCSVString(new StringBuilder()));
             }
 
             var p = new Process();
@@ -141,7 +143,7 @@ namespace ProduktFinderClient.Commands
         }
 
         ///<summary>returns true if an answer in answers has |parts| >= orderAmount </summary>
-        private bool SetTablesForOrderAmount(ColumnedTable table, List<Part> answers, int lookUpAmount, int priceAmount, int row, int columnIndex, int amountDefaultAttributes, string keyword)
+        private bool SetTablesForOrderAmount(ColumnedTable table, List<Part> answers, int lookUpAmount, int priceAmount, int row, string keyword)
         {
             
             foreach (var answer in answers)
@@ -152,10 +154,10 @@ namespace ProduktFinderClient.Commands
                 string manufacturerPartNumber = answer.ManufacturerPartNumber ?? "";
                 int amountInStock = answer.AmountInStock ?? -1;
 
-                table.SetField(row, amountDefaultAttributes + columnIndex, manufacturerPartNumber);
-                table.SetField(row, amountDefaultAttributes + columnIndex + 1, manufacturerPartNumber.Equals(keyword) ? "TRUE" : "FALSE");
-                table.SetField(row, amountDefaultAttributes + columnIndex + 2, amountInStock >= priceAmount ? amountInStock.ToString() : amountInStock.ToString() + " (!Achtung! Bestand < Bedarf)");
-                table.SetField(row, amountDefaultAttributes + columnIndex + 4, FindPriceInPrices(priceAmount, answer.Prices));
+                table.SetField(row, 0, manufacturerPartNumber);
+                table.SetField(row, 1, manufacturerPartNumber.Equals(keyword) ? "TRUE" : "FALSE");
+                table.SetField(row, 2, amountInStock >= priceAmount ? amountInStock.ToString() : amountInStock.ToString() + " (!Achtung! Bestand < Bedarf)");
+                table.SetField(row, 3, FindPriceInPrices(priceAmount, answer.Prices));
                 return true;
             }
             

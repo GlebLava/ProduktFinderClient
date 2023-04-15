@@ -12,9 +12,9 @@ TRACE;DEBUG;NET;NET6_0;NETCOREAPP
 C:\Users\glebg\Desktop\HCS\ProduktFinderClient\ProduktFinderClientSol\ProduktFinderClient\App.xaml
 9-1537484158
 
-38899370677
+39-1539800283
 194-97651837
 Components\ColumnBasedGrid.xaml;Components\DropdownMenuStyle.xaml;Components\TextGrid.xaml;MyResources\DarkScrollViewer.xaml;MyResources\MainStyleResource.xaml;Themes\Generic.xaml;Views\CSVPreviewWindow.xaml;Views\MainWindow.xaml;Views\OptionsWindow.xaml;
 
-False
+True
 

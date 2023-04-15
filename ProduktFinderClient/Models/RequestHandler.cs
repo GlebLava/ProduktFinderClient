@@ -56,17 +56,29 @@ namespace ProduktFinderClient.Models
             Filter filter = new Filter();
             filter.ModulesToSearchWith.Add(api);
 
-            return await Search(keyword ,filter, numberOfResultsPerAPI, UpdateUserCallback);
+            return await Search(keyword, filter, numberOfResultsPerAPI, UpdateUserCallback);
         }
 
         public static async Task<List<Part>?> Search(string keyword, Filter filter, int numberOfResultsPerAPI, Action<string> UpdateUserCallback)
         {
             try
             {
+                keyword = FilterKeyWord(keyword);
+
+                // UPDATE USER
                 string userCallbackModules = "";
                 foreach (var module in filter.ModulesToSearchWith)
-                    userCallbackModules += module.ToString() + ", ";
+                {
+                    Filter.ModulesTranslation.TryGetValue(module, out string moduleName);
+                    userCallbackModules += moduleName + ", ";
+                }
+
+                //Remove last Comma
+                userCallbackModules = userCallbackModules.Remove(userCallbackModules.Length - 2);
                 UpdateUserCallback?.Invoke("Am Suchen mit " + userCallbackModules);
+                // UPDATE USER END
+
+
 
                 string sContent = JsonSerializer.Serialize<Filter>(filter);
                 StringContent stringContent = new StringContent(sContent, System.Text.Encoding.UTF8, "application/json");
@@ -77,22 +89,50 @@ namespace ProduktFinderClient.Models
 
                 HttpResponseMessage response = await _httpClient.SendAsync(request);
 
-                string answer = await response.Content.ReadAsStringAsync();
-                List<Part>? results = JsonSerializer.Deserialize<List<Part>>(answer, new JsonSerializerOptions
+                if (CheckErrorCodes(response))
                 {
-                    PropertyNameCaseInsensitive = true
-                });
+                    string answer = await response.Content.ReadAsStringAsync();
+                    List<Part>? results = JsonSerializer.Deserialize<List<Part>>(answer, new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    });
 
 
-                UpdateUserCallback?.Invoke(userCallbackModules + "  Suche fertig");
-                return results;
+                    UpdateUserCallback?.Invoke(userCallbackModules + "  Suche fertig");
+                    return results;
+                }
+                else
+                {
+                    UpdateUserCallback?.Invoke(userCallbackModules + "  hatte Probleme keine Antwort bekommen");
+                    return new List<Part>();
+                }
             }
             catch (Exception e)
             {
                 ErrorLogger.LogError(e, keyword);
                 return null;
             }
-            
+
+        }
+
+        private static bool CheckErrorCodes(HttpResponseMessage responseMessage)
+        {
+            if (responseMessage.StatusCode == System.Net.HttpStatusCode.InternalServerError)
+                return false;
+            if (responseMessage.StatusCode == System.Net.HttpStatusCode.NotFound)
+                return false;
+
+            return true;
+        }
+
+        private static string FilterKeyWord(string keyWord)
+        {
+            if (keyWord is null) return "";
+
+            string result = keyWord.Replace("\\", "");
+            result = result.Replace("/", "");
+
+            return result;
         }
     }
 

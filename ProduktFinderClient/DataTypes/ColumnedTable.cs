@@ -8,14 +8,25 @@ namespace ProduktFinderClient.DataTypes
     {
         public int ColumnLength { get { return columns.Length; } }
 
-        string[] columns;
-        List<string[]> rows;
+        protected string[] columns;
+        protected List<string[]> rows;
 
         public ColumnedTable(string[] columns)
         {
             this.columns = columns;
             rows = new List<string[]>();
         }
+        public void AddNewRow(string[] row)
+        {
+            if (row == null)
+                throw new NullReferenceException("Input row cant be null!");
+
+            if (row.Length != ColumnLength)
+                throw new IndexOutOfRangeException($"Input row has to have the same length as ColumnLength! Got {row.Length}  but expected {ColumnLength}");
+
+            rows.Add(row);
+        }
+
 
         public void AddNewRow()
         {
@@ -53,6 +64,37 @@ namespace ProduktFinderClient.DataTypes
             }
 
             return sb.ToString();
+        }
+
+        public static ColumnedTable Combine(ColumnedTable left, ColumnedTable right)
+        {
+            string[] headers = left.columns.Concat(right.columns);
+
+            ColumnedTable result = new ColumnedTable(headers);
+
+            if (left.rows.Count != right.rows.Count)
+                throw new Exception("Both tables need to have the same amount of rows!");
+
+
+            for (int i = 0; i < left.rows.Count; i++)
+            {
+                string[] row = left.rows[i].Concat(right.rows[i]);  
+                result.AddNewRow(row);
+            }
+
+            return result;
+        }
+
+        public static ColumnedTable Combine(params ColumnedTable[] columnedTables)
+        {
+            ColumnedTable result = columnedTables[0];
+
+            for (int i = 1; i < columnedTables.Length; i++)
+            {
+                result = Combine(result, columnedTables[i]);
+            }
+
+            return result;
         }
 
     }
