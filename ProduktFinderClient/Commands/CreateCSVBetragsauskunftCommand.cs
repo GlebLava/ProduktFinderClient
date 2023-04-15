@@ -54,7 +54,7 @@ namespace ProduktFinderClient.Commands
 
         protected override async Task ExecuteAsync(object parameter)
         {
-            /*
+            
             CommandParams cparams = GetCommandParamsFunc();
 
             LoadSaveSystem.bedarfMostUsedKeywordsModule.RegisterKeyword(RegexKeywordTransform(cparams.bedarfTitel));
@@ -63,8 +63,19 @@ namespace ProduktFinderClient.Commands
 
             LoadSaveSystem.SaveMostUsedKeywordsModules();
 
-            ExcludeAPIFlags excludeAPIFlags = new ExcludeAPIFlags(!mainWindowViewModel.Lieferanten[0].IsChecked, !mainWindowViewModel.Lieferanten[1].IsChecked, !mainWindowViewModel.Lieferanten[2].IsChecked, !mainWindowViewModel.Lieferanten[3].IsChecked);
-            int includedAPIsCount = excludeAPIFlags.IncludedCount();
+            // Configure which Modules we want to search with
+            Filter filter = new Filter();
+            foreach (var checkableString in mainWindowViewModel.Lieferanten)
+            {
+                if (checkableString.IsChecked)
+                {
+                    Filter.ModulesTranslation.TryGetKey(checkableString.AttributeName, out ModuleType moduleType);
+                    filter.ModulesToSearchWith.Add(moduleType);
+                }
+            }
+
+
+            int includedAPIsCount = filter.ModulesToSearchWith.Count;
             int amountDefaultAttributes = 3;
             int amountSupplierAttributes = 5;
             int j = amountDefaultAttributes;
@@ -72,15 +83,13 @@ namespace ProduktFinderClient.Commands
             headers[0] = "HCS-Artikel-Nr";
             headers[1] = "Bedarf";
             headers[2] = "HCS H-Artikelnr";
-            for (int i = 0; i < excludeAPIFlags.excludeAPIFlags.Length; i++)
+            foreach (ModuleType moduleType in filter.ModulesToSearchWith)
             {
-                if (excludeAPIFlags.excludeAPIFlags[i])
-                    continue;
-                string supplierName = mainWindowViewModel.Lieferanten[i].AttributeName;
+                Filter.ModulesTranslation.TryGetValue(moduleType, out string supplierName);
+
                 headers[j] = "Herstellernr bei " + supplierName;
                 headers[j + 1] = "HCS H-Artikelnr == " + supplierName + "-Herstellernr";
-                headers[j + 2] = "Bestand bei " + supplierName;
-                headers[j + 3] = "Status bei " + supplierName;
+                headers[j + 2] = "Lagerbestand bei " + supplierName;
                 headers[j + 4] = "Preis bei " + supplierName;
                 j += amountSupplierAttributes;
             }
@@ -98,12 +107,11 @@ namespace ProduktFinderClient.Commands
                 int columnIndex = 0;
 
                 //                                        WICHTIG NICHT VERGESSEN
-                for (API api = 0; api < API.count; api++, columnIndex += amountSupplierAttributes)
+                foreach (ModuleType moduleType in filter.ModulesToSearchWith)
                 {
-                    if (excludeAPIFlags.excludeAPIFlags[(int)api] || keyword == null || keyword == "")
-                        continue;
-                    List<Part> answers = await RequestHandler.SearchWith(api, keyword, 3, UpdateUserCallback);
-                    if (answers == null || answers.Count == 0)
+                    columnIndex += amountSupplierAttributes;
+                    List<Part>? answers = await RequestHandler.SearchWith(moduleType, keyword, 3, UpdateUserCallback);
+                    if (answers is null || answers.Count == 0)
                         continue;
                     
                     if (!SetTablesForOrderAmount(table, answers, orderAmount, orderAmount, i, columnIndex, amountDefaultAttributes, keyword))
@@ -121,8 +129,7 @@ namespace ProduktFinderClient.Commands
             {
                 UseShellExecute = true
             };
-            p.Start();
-            */
+            p.Start();      
         }
 
 
@@ -136,23 +143,46 @@ namespace ProduktFinderClient.Commands
         ///<summary>returns true if an answer in answers has |parts| >= orderAmount </summary>
         private bool SetTablesForOrderAmount(ColumnedTable table, List<Part> answers, int lookUpAmount, int priceAmount, int row, int columnIndex, int amountDefaultAttributes, string keyword)
         {
-            /*
+            
             foreach (var answer in answers)
             {
-                if (answer.amountAvailable < lookUpAmount)
+                if (answer.AmountInStock < lookUpAmount)
                     continue;
 
-                table.SetField(row, amountDefaultAttributes + columnIndex, answer.manufacturerPartNumber);
-                table.SetField(row, amountDefaultAttributes + columnIndex + 1, answer.manufacturerPartNumber.Equals(keyword) ? "TRUE" : "FALSE");
-                table.SetField(row, amountDefaultAttributes + columnIndex + 2, answer.amountAvailable >= priceAmount ? answer.amountAvailable.ToString() : answer.amountAvailable.ToString() + " (!Achtung! Bestand < Bedarf)");
-                table.SetField(row, amountDefaultAttributes + columnIndex + 3, answer.inStock ? "auf Lager" : "auf Bestellung");
-                table.SetField(row, amountDefaultAttributes + columnIndex + 4, FindPriceInPrices(priceAmount, answer.prices));
+                string manufacturerPartNumber = answer.ManufacturerPartNumber ?? "";
+                int amountInStock = answer.AmountInStock ?? -1;
+
+                table.SetField(row, amountDefaultAttributes + columnIndex, manufacturerPartNumber);
+                table.SetField(row, amountDefaultAttributes + columnIndex + 1, manufacturerPartNumber.Equals(keyword) ? "TRUE" : "FALSE");
+                table.SetField(row, amountDefaultAttributes + columnIndex + 2, amountInStock >= priceAmount ? amountInStock.ToString() : amountInStock.ToString() + " (!Achtung! Bestand < Bedarf)");
+                table.SetField(row, amountDefaultAttributes + columnIndex + 4, FindPriceInPrices(priceAmount, answer.Prices));
                 return true;
             }
-            */
+            
             return false;
         }
-      
-        
+
+        private string FindPriceInPrices(int orderAmount, List<Price> prices)
+        {
+            if (prices == null)
+                return "NULL";
+
+            try
+            {
+                for (int i = 0; i < prices.Count - 1; i++)
+                {
+                    if (orderAmount >= prices[i].FromAmount && orderAmount < prices[i + 1].FromAmount)
+                        return prices[i].PricePerPiece + " " + prices[i].Currency;
+                }
+
+                return prices[prices.Count - 1].PricePerPiece + " " + prices[prices.Count - 1].Currency;
+            }
+            catch (Exception)
+            {
+                return "NULL";
+            }
+        }
+
+
     }
 }

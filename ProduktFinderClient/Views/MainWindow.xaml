@@ -55,7 +55,7 @@
                             Command="{Binding OpenCSVPreviewCommand}"
                             Style="{StaticResource WindowChromeFunctionalButton}">
                         <ContentControl Margin="5" 
-                                        Content="CSV Spaltenauswahl"
+                                        Content="CSV Bedarfsauskunft"
                                         FontSize="{Binding RelativeSource={RelativeSource AncestorType=Window},Path=FontSize}"/>
                     </Button>
 
