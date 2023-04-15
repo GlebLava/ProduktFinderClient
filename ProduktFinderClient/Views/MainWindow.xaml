@@ -1,0 +1,183 @@
+﻿<Window x:Class="ProduktFinderClient.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:ProduktFinderClient"
+        xmlns:components="clr-namespace:ProduktFinderClient.Components"
+        mc:Ignorable="d"
+        Title="ProduktFinder" Height="700" Width="1200" 
+        WindowStyle="None"
+        AllowsTransparency="True"
+        PreviewMouseWheel="Window_PreviewMouseWheel">
+
+    <WindowChrome.WindowChrome>
+        <WindowChrome CaptionHeight="35"/>
+    </WindowChrome.WindowChrome>
+
+    <Grid x:Name="AllGrid"
+          Background="{StaticResource MainBackGroundColor}">
+        <DockPanel LastChildFill="True">
+
+            <!-- ChromeWindow -->
+            <Grid VerticalAlignment="Top" Background="{StaticResource WindowChromeColor}" DockPanel.Dock="Top"
+                  MouseEnter="Tools_MouseEnter"
+                  MouseLeave="Tools_MouseLeave">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="35"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <StackPanel VerticalAlignment="Center" 
+                            HorizontalAlignment="Right"
+                            WindowChrome.IsHitTestVisibleInChrome="True"
+                            Orientation="Horizontal"
+                            Height="Auto"
+                            Grid.Row="0">
+                    <Button Width="35" Content="−" x:Name="MinimizeButton" Style="{StaticResource WindowChromeButton}"   
+                            FontWeight="Bold" FontSize="20"/>
+                    <Button Width="35" Content="◻" x:Name="MaximzeButton" Style="{StaticResource WindowChromeButton}"
+                            FontWeight="Bold" FontSize="20"/>
+                    <Button Width="35" Content="✖" x:Name="CloseButton" Style="{StaticResource WindowChromeButton}"
+                            FontWeight="Bold" FontSize="13"/>
+                </StackPanel>
+
+                <StackPanel VerticalAlignment="Bottom"
+                            HorizontalAlignment="Left"
+                            Orientation="Horizontal"
+                            Height="Auto"
+                            Grid.Row="1"
+                            Margin="20,10,0,10">
+
+
+                    <Button x:Name="CSVFileManuellButton"
+                            Margin="0,0,0,0"
+                            Command="{Binding OpenCSVPreviewCommand}"
+                            Style="{StaticResource WindowChromeFunctionalButton}">
+                        <ContentControl Margin="5" 
+                                        Content="CSV Spaltenauswahl"
+                                        FontSize="{Binding RelativeSource={RelativeSource AncestorType=Window},Path=FontSize}"/>
+                    </Button>
+
+                    <Button x:Name="OptionsButton"
+                            Margin="0,0,0,0"
+                            Command="{Binding OpenOptionsCommand}"
+                            Style="{StaticResource WindowChromeFunctionalButton}">
+                        <ContentControl Margin="5" 
+                                        Content="Optionen"
+                                        FontSize="{Binding RelativeSource={RelativeSource AncestorType=Window},Path=FontSize}"/>
+                    </Button>
+
+
+                </StackPanel>
+
+            </Grid>
+
+
+            <!-- Toolbar -->
+            <Border DockPanel.Dock="Top"
+                    BorderThickness="0"
+                    Background="{Binding Background, ElementName=AllGrid}"
+                    MouseEnter="Tools_MouseEnter"
+                    MouseLeave="Tools_MouseLeave"
+                    HorizontalAlignment="Stretch">
+
+                <DockPanel>
+                    <StackPanel Orientation="Horizontal" Name="Tools" Margin="0,10,0,10"
+                                DockPanel.Dock="Left">
+                        <TextBox
+                        Name="KeywordSearchBox"
+                        Margin="20, 0, 0, 0"
+                        Text="bc847c"
+                        Width="200"
+                        Style="{StaticResource ToolbarTextBox}"
+                        FontSize="{Binding RelativeSource={RelativeSource AncestorType=Window},Path=FontSize}">
+
+                            <TextBox.InputBindings>
+                                <KeyBinding Key="Enter" 
+                                        Command="{Binding SearchCommand}"
+                                        CommandParameter="{Binding Text, ElementName=KeywordSearchBox}"/>
+                            </TextBox.InputBindings>
+
+                        </TextBox>
+                        <Button
+                            Name="SearchButton"
+                            Margin="5, 0, 0, 0"
+                            Command="{Binding SearchCommand}"
+                            CommandParameter="{Binding Text, ElementName=KeywordSearchBox}"
+                            Style="{StaticResource ToolbarButton}">
+                            <ContentControl Margin="5" 
+                                        Content="Search"
+                                        FontSize="{Binding RelativeSource={RelativeSource AncestorType=Window},Path=FontSize}"/>
+                        </Button>
+
+                        <components:DropdownMenu 
+                                                   x:Name="LieferantenDropDown"
+                                                   Foreground="{StaticResource ToolbarForeGroundColor}"
+                                                   Background="{StaticResource ToolbarBackGroundColor}"
+                                                   Title ="Lieferanten"
+                                                   Padding="5"
+                                                   VerticalAlignment="Center"
+                                                   HoverBackGround="{StaticResource ButtonHoverBackgroundColor}"
+                                                   HoverForeGround="{StaticResource ButtonHoverForegroundColor}"
+                                                   ItemsSource="{Binding Lieferanten}"
+                                                   Margin="40,0,0,0"
+                                                   FontSize="{Binding RelativeSource={RelativeSource AncestorType=Window},Path=FontSize}"
+                                                   SelectionMode="Single">
+
+                            <components:DropdownMenu.ItemTemplate>
+                                <DataTemplate>
+                                    <CheckBox Content="{Binding Path=AttributeName}"
+                                          IsChecked="{Binding Path=IsChecked}"
+                                          Style="{StaticResource ToolBarCheckBox}"/>
+                                </DataTemplate>
+                            </components:DropdownMenu.ItemTemplate>
+                        </components:DropdownMenu>
+
+                    </StackPanel>
+
+                    <ScrollViewer Style="{StaticResource DarkScrollViewerStyle}"
+                                  DockPanel.Dock="Right"
+                                  Margin="0, 0, 20, 0"
+                                  Width="250"
+                                  Height="{Binding RelativeSource={RelativeSource AncestorType=local:MainWindow},Path=InfoBoxHeight}"
+                                  HorizontalAlignment="Right"
+                                  CanContentScroll="True"
+                                  ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                  ScrollViewer.VerticalScrollBarVisibility="Visible">
+
+                        <TextBlock x:Name="UserUpdate"
+                                   TextWrapping="Wrap"
+                                   Height="Auto"
+                                   Style="{StaticResource ToolbarTextBlock}"
+                                   Text="{Binding UserUpdate}"
+                                   FontSize="{Binding RelativeSource={RelativeSource AncestorType=local:MainWindow},Path=InfoBoxFontSize}">
+                        </TextBlock>
+
+                    </ScrollViewer>
+
+
+                </DockPanel>
+            </Border>
+
+            <Border CornerRadius="20"
+                    Margin="20"
+                    BorderBrush="{StaticResource ToolbarForeGroundColor}"
+                    Background="{StaticResource AllBackGroundColor}">
+
+                <components:ColumnBasedGrid x:Name="MainColumnBasedGrid"
+           
+                                            SpecifiedGrid="{Binding SpecifiedGrid, Mode=TwoWay,
+                                                UpdateSourceTrigger=PropertyChanged}"
+                                        
+                                            ColumnsVisible="{Binding HeadersActive, Mode=TwoWay,
+                                                UpdateSourceTrigger=PropertyChanged}"
+                                        
+                                            FontSize="20"
+                                            Margin="10"/>
+
+            </Border>
+
+        </DockPanel>
+    </Grid>
+</Window>

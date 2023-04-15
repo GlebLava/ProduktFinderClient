@@ -1,0 +1,200 @@
+﻿<Window x:Class="ProduktFinderClient.Views.CSVPreviewWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:ProduktFinderClient.Views"
+        xmlns:components="clr-namespace:ProduktFinderClient.Components"
+        mc:Ignorable="d"
+        Title="CSVPreviewWindow" Height="450" Width="800"
+        WindowStyle="None"
+        AllowsTransparency="True">
+
+    <WindowChrome.WindowChrome>
+        <WindowChrome CaptionHeight="35"/>
+    </WindowChrome.WindowChrome>
+
+    <Window.Resources>
+
+        <Style TargetType="components:DropdownMenu">
+            <Setter Property="Foreground" Value="{StaticResource ToolbarForeGroundColor}"/>
+            <Setter Property="Background" Value="{StaticResource ToolbarBackGroundColor}"/>
+            <Setter Property="Padding" Value="5"/>
+
+            <Setter Property="HoverBackGround" Value="{StaticResource ButtonHoverBackgroundColor}"/>
+            <Setter Property="HoverForeGround" Value="{StaticResource ButtonHoverForegroundColor}"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="FontSize" Value="{Binding RelativeSource={RelativeSource AncestorType=Window},Path=FontSize}"/>
+            <Setter Property="SelectionMode" Value="Single"/>
+            
+        </Style>
+
+        <Style TargetType="ListViewItem">
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="VerticalAlignment" Value="Stretch"/>
+            <Setter Property="Margin" Value="0"/>
+        </Style>
+        
+    </Window.Resources>
+    
+
+    <Grid Background="{StaticResource ChildwindowBackGroundColor}">
+        <DockPanel LastChildFill="True">
+            <!-- ChromeWindow -->
+            <Grid VerticalAlignment="Top" Background="{StaticResource WindowChromeColor}" DockPanel.Dock="Top">
+                <StackPanel VerticalAlignment="Center" 
+                        HorizontalAlignment="Right"
+                        WindowChrome.IsHitTestVisibleInChrome="True"
+                        Orientation="Horizontal"
+                        Height="35">
+                    <Button Width="35" Content="−" Name="MinimizeButton" Style="{StaticResource WindowChromeButton}"
+                            FontWeight="Bold" FontSize="20"/>
+                    <Button Width="35" Content="◻" Name="MaximzeButton" Style="{StaticResource WindowChromeButton}"
+                            FontWeight="Bold" FontSize="20"/>
+                    <Button Width="35" Content="✖" Name="CloseButton" Style="{StaticResource WindowChromeButton}"
+                            FontWeight="Bold" FontSize="15"/>
+                </StackPanel>
+            </Grid>
+            <!-- END ChromeWindow -->
+
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="20"/>
+                    <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width="20"/>
+                </Grid.ColumnDefinitions>
+
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="40"/>
+                    <RowDefinition Height="0.7*"/>
+                    <RowDefinition Height="40"/>
+                    <RowDefinition Height="10"/>
+                </Grid.RowDefinitions>
+
+                <!-- First Row -->
+
+                <StackPanel Orientation="Horizontal"
+                            HorizontalAlignment="Left"
+                            Grid.Row="0"
+                            Grid.Column="1">
+
+                    <Label Content="Bedarf:"
+                           VerticalAlignment="Center"
+                           Foreground="{StaticResource ToolbarForeGroundColor}"/>
+
+                    <components:DropdownMenu x:Name="bedarf_DropDown"
+                                             Title="{Binding BedarfTitel}"
+                                             ItemsSource="{Binding Bedarf}"
+                                             Width="Auto">
+
+                        <components:DropdownMenu.ItemTemplate>
+                            <DataTemplate>
+                                <Border BorderBrush="Black"
+                                        BorderThickness="0.5">
+                                    <Button Content="{Binding Path=Text}"
+                                        Command="{Binding Path=Command}"
+                                        Style="{StaticResource ToolbarButtonNotRound}"
+                                        Click="Button_ClickBedarf"/>
+                                </Border>
+                            </DataTemplate>
+                        </components:DropdownMenu.ItemTemplate>
+
+                    </components:DropdownMenu>
+
+
+
+                    <Label Content="H__Artikelnummer:"
+                           VerticalAlignment="Center"
+                           Foreground="{StaticResource ToolbarForeGroundColor}"/>
+
+                    <components:DropdownMenu x:Name="h_DropDown"
+                                             Title="{Binding H_ArtikelnummerTitel}"
+                                             ItemsSource="{Binding H_Artikelnummer}"
+                                             Width="Auto">
+
+                        <components:DropdownMenu.ItemTemplate>
+                            <DataTemplate>
+                                <Border BorderBrush="Black"
+                                        BorderThickness="0.5">
+                                    <Button Content="{Binding Path=Text}"
+                                        Command="{Binding Path=Command}"
+                                        Style="{StaticResource ToolbarButtonNotRound}"
+                                        Click="Button_Clickh"/>
+                                </Border>
+                            </DataTemplate>
+                        </components:DropdownMenu.ItemTemplate>
+
+                    </components:DropdownMenu>
+
+
+                    <Label Content="HCS__Artikelnummer:"
+                           VerticalAlignment="Center"
+                           Foreground="{StaticResource ToolbarForeGroundColor}"/>
+
+                    <components:DropdownMenu x:Name="hcs_DropDown"
+                                             Title="{Binding HCS_ArtikelnummerTitel}"
+                                             ItemsSource="{Binding HCS_Artikelnummer}"
+                                             Width="Auto">
+
+                        <components:DropdownMenu.ItemTemplate>
+                            <DataTemplate>
+                                <Border BorderBrush="Black"
+                                        BorderThickness="0.5">
+                                    <Button Content="{Binding Path=Text}"
+                                        Command="{Binding Path=Command}"
+                                        Style="{StaticResource ToolbarButtonNotRound}"
+                                        Click="Button_Clickhcs"/>
+                                </Border>
+                            </DataTemplate>
+                        </components:DropdownMenu.ItemTemplate>
+
+                    </components:DropdownMenu>
+
+                </StackPanel>
+                <!-- Preview Window -->
+
+                <DockPanel LastChildFill="True" Grid.Row="1" Grid.Column="1">
+
+                    <Label Content="Preview Output:"
+                           Foreground="{StaticResource ToolbarForeGroundColor}"
+                           DockPanel.Dock="Top"/>
+
+                    <components:TextGrid SpecifiedGrid="{Binding PreviewGrid}"/>
+
+                </DockPanel>
+
+                <!-- Last Row -->
+                <StackPanel Orientation="Horizontal" Grid.Row="2" Grid.Column="1">
+
+                    <Label Content="Speicher Ort:"
+                           VerticalAlignment="Center"
+                           Foreground="{StaticResource ToolbarForeGroundColor}"/>
+                    
+                    <TextBox Style="{StaticResource ToolbarTextBox}"
+                             Width="200"
+                             Text="{Binding SavePath}"
+                             TextChanged="SearchBox_TextChanged"/>
+
+                    <Button Style="{StaticResource ToolbarButtonNotRound}"
+                            Command="{Binding ChooseSavePathCommand}">
+                        <ContentControl Content="Ort suchen"
+                                        Margin="5"/>
+                    </Button>
+                </StackPanel>
+
+
+                <Button Style="{StaticResource ToolbarButtonNotRound}"
+                        Grid.Column="1"
+                        Grid.Row="2"
+                        Width="Auto"
+                        HorizontalAlignment="Right"
+                        Command="{Binding BedarfsauskunftsCommand}">
+                    <ContentControl Content="Start"
+                                    Margin="5"/>
+                </Button>
+
+            </Grid>
+
+        </DockPanel>
+    </Grid>
+</Window>

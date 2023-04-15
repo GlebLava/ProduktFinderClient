@@ -1,0 +1,71 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:local="clr-namespace:ProduktFinderClient.Components">
+    
+    
+
+    <Style TargetType="local:DropdownMenu">
+        <Setter Property="Background"  Value="Transparent"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="local:DropdownMenu">
+
+                    <Grid x:Name="PART_Grid">
+                        <Button x:Name="PART_ToggleButton"
+                                Content="{TemplateBinding Title}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                FontSize="{TemplateBinding FontSize}">
+
+                            <Button.Resources>
+                                <Style TargetType="Button">
+                                    <Setter Property="Background" Value="{Binding Background, RelativeSource={RelativeSource Mode=TemplatedParent}}"/>
+                                    <Setter Property="Foreground" Value="{Binding Foreground, RelativeSource={RelativeSource Mode=TemplatedParent}}"/>
+
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border Background="{TemplateBinding Background}" 
+                                                        BorderBrush="{TemplateBinding BorderBrush}"
+                                                        BorderThickness="{TemplateBinding BorderThickness}"
+                                                        CornerRadius="{Binding CornerRadius, RelativeSource={RelativeSource AncestorType=local:DropdownMenu}}"
+                                                        Padding="{Binding Padding, RelativeSource={RelativeSource AncestorType=local:DropdownMenu}}">
+
+                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+
+                                                </Border>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="{Binding HoverBackGround, RelativeSource={RelativeSource AncestorType=local:DropdownMenu}}"/>
+                                            <Setter Property="Foreground" Value="{Binding HoverForeGround, RelativeSource={RelativeSource AncestorType=local:DropdownMenu}}"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Resources>
+                        </Button>
+
+                        <local:PopupNonTopmost x:Name="PART_Popup"
+                                               Placement="Bottom"
+                                               AllowsTransparency="True"
+                                               Focusable="False"
+                                               PopupAnimation="Slide">
+
+                            <ListView  ItemsSource="{TemplateBinding ItemsSource}"
+                                       ItemTemplate="{TemplateBinding ItemTemplate}"
+                                       SelectionMode="{TemplateBinding SelectionMode}"
+                                       BorderThickness="0"
+                                       Background="{TemplateBinding Background}"
+                                       Foreground="{TemplateBinding Foreground}">
+                            </ListView>
+
+                        </local:PopupNonTopmost>
+                    </Grid>
+
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+</ResourceDictionary>
