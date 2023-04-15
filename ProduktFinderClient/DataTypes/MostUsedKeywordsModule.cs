@@ -2,17 +2,18 @@
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 using System.Text;
+using System.Text.Json.Serialization;
 
 namespace ProduktFinderClient.DataTypes
 {
     [Serializable]
     public class MostUsedKeywordsModule
     {
-        public Dictionary<string, int> MainDictionary = new Dictionary<string, int>();
+        public Dictionary<string, int> MainDictionary { get; set; } = new Dictionary<string, int>();
 
-        public string GetMostUsedKeyword(ref int index, string[] keywords)
+        public string? GetMostUsedKeyword(ref int index, string[] keywords)
         {
-            string s = null;
+            string? s = null;
             int maxKeywordCount = 0;
             
             for (int i = 0; i < keywords.Length; i++) 

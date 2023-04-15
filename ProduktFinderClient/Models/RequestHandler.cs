@@ -40,7 +40,7 @@ namespace ProduktFinderClient.Models
     public class RequestHandler
     {
         private static readonly HttpClient _httpClient = new();
-        private static readonly string _baseUrl = @"https://localhost:7295/getParts/";
+        private static readonly string _baseUrl = @"http://localhost:5000/getParts/";
 
 
 
