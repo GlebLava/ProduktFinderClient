@@ -39,8 +39,8 @@ namespace ProduktFinderClient.Models
 
     public class RequestHandler
     {
-        private static readonly HttpClient _httpClient = new();
-        private static readonly string _baseUrl = @"http://localhost:5000/getParts/";
+        private static readonly HttpClientQueue _httpQueue = new(10);
+        private static readonly string _baseUrl = @"http://localhost:5555/getParts/";
 
 
 
@@ -87,7 +87,9 @@ namespace ProduktFinderClient.Models
                 HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, url);
                 request.Content = stringContent;
 
-                HttpResponseMessage response = await _httpClient.SendAsync(request);
+                HttpResponseMessage? response = await _httpQueue.EnqueueAsync(request);
+                if (response is null)
+                    throw new Exception("Problem with the HttpQueue");
 
                 if (CheckErrorCodes(response))
                 {

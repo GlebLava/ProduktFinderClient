@@ -43,7 +43,7 @@ namespace ProduktFinderClient.Commands
             }
         }
 
-        public CreateCSVBetragsauskunftCommand(MainWindowViewModel mainWindowViewModel, CSVObject csv, Action<string> UpdateUserCallback, Func<string, string> RegexKeywordTransform, Func<CommandParams> GetCommandParamsFunc) 
+        public CreateCSVBetragsauskunftCommand(MainWindowViewModel mainWindowViewModel, CSVObject csv, Action<string> UpdateUserCallback, Func<string, string> RegexKeywordTransform, Func<CommandParams> GetCommandParamsFunc)
         {
             this.mainWindowViewModel = mainWindowViewModel;
             this.UpdateUserCallback = UpdateUserCallback;
@@ -52,9 +52,20 @@ namespace ProduktFinderClient.Commands
             this.GetCommandParamsFunc = GetCommandParamsFunc;
         }
 
+        /// <summary>
+        /// This method works the following way. The Command gets the input CSV Table (the table that the user opens in CSV Bedarfsauskunft) as the input
+        /// When the user chooses which columns are wanted, the indexes of these columns are saved in cparams.
+        /// This way we know where to look for in the csv table for the inputs
+        /// 
+        /// Afterwards we create one ColumnedTable for the headers. This one always exists. It represents all the left columns (the inputs)
+        /// And for each api we create a ColumnedTable seperatly. Each one gets filled with all the answers individually and async. That way each table can get filled on its own.
+        /// Afterwards all tables are combined. ColumnedTable.Combine, combines the tables in Order from left to right, such that the columns in the resulting table are  side by side
+        /// </summary>
+        /// <param name="parameter"></param>
+        /// <returns></returns>
         protected override async Task ExecuteAsync(object parameter)
         {
-            
+
             CommandParams cparams = GetCommandParamsFunc();
 
             LoadSaveSystem.bedarfMostUsedKeywordsModule.RegisterKeyword(RegexKeywordTransform(cparams.bedarfTitel));
@@ -91,6 +102,7 @@ namespace ProduktFinderClient.Commands
                 }));
             }
 
+            // Fill main table
             for (int i = 0; i < csv.FieldsLength; i++)
             {
                 string hcsNr = csv.GetField(i, cparams.hcs_ArtikelnummerIndex);
@@ -100,26 +112,24 @@ namespace ProduktFinderClient.Commands
                 mainTable.SetField(i, 0, hcsNr);
                 mainTable.SetField(i, 1, orderAmount.ToString());
                 mainTable.SetField(i, 2, keyword);
-                
-                
-                int tableIndex = 0;
-                foreach (ModuleType moduleType in filter.ModulesToSearchWith)
-                {
-                    ColumnedTable table = apiTables[tableIndex];
-                    table.AddNewRow();
-                    tableIndex++;
-
-                    List<Part>? answers = await RequestHandler.SearchWith(moduleType, keyword, 3, UpdateUserCallback);
-                    if (answers is null || answers.Count == 0)
-                        continue;
-                    
-                    if (!SetTablesForOrderAmount(table, answers, orderAmount, orderAmount, i, keyword))
-                        SetTablesForOrderAmount(table, answers, 1, orderAmount, i, keyword);
-                }
             }
+
+            // Fill all moduleTables
+            List<Task> tasks = new();
+            int tableIndex = 0;
+            foreach (ModuleType moduleType in filter.ModulesToSearchWith)
+            {
+                ColumnedTable table = apiTables[tableIndex];
+                tableIndex++;
+                tasks.Add(FillTable(moduleType, table, cparams));
+            }
+            await Task.WhenAll(tasks);
+
 
             apiTables.Insert(0, mainTable);
             ColumnedTable combinedTable = ColumnedTable.Combine(apiTables.ToArray());
+
+
 
             using (StreamWriter sw = File.CreateText(cparams.savePath))
             {
@@ -131,7 +141,7 @@ namespace ProduktFinderClient.Commands
             {
                 UseShellExecute = true
             };
-            p.Start();      
+            p.Start();
         }
 
 
@@ -141,6 +151,40 @@ namespace ProduktFinderClient.Commands
             int orderAmountAsInt = StringDataExtractor.ExtractInt(orderAmount);
             return orderAmountAsInt;
         }
+
+
+        private async Task FillTable(ModuleType moduleType, ColumnedTable table, CommandParams cparams)
+        {
+            List<Task> tasks = new();
+            for (int i = 0; i < csv.FieldsLength; i++)
+            {
+                table.AddNewRow();
+                int orderAmount = ExtractIntFromOrderAmount(csv.GetField(i, cparams.bedarfIndex));
+                string keyword = csv.GetField(i, cparams.h_ArtikelnummerIndex);
+
+                tasks.Add(ProcessRequest(moduleType, table, keyword, i, orderAmount));
+                if (tasks.Count >= 5)
+                {
+                    await Task.WhenAll(tasks);
+                    tasks.Clear();
+                }
+            }
+
+            // Important! Dont forget to await all remaining tasks
+            await Task.WhenAll(tasks);
+        }
+
+        private async Task ProcessRequest(ModuleType moduleType, ColumnedTable table, string keyword, int row, int orderAmount)
+        {
+            List<Part>? answers = await RequestHandler.SearchWith(moduleType, keyword, 3, UpdateUserCallback);
+            if (answers is null || answers.Count == 0)
+                return;
+
+            if (!SetTablesForOrderAmount(table, answers, orderAmount, orderAmount, row, keyword))
+                SetTablesForOrderAmount(table, answers, 1, orderAmount, row, keyword);
+        }
+
+
 
         ///<summary>returns true if an answer in answers has |parts| >= orderAmount </summary>
         private bool SetTablesForOrderAmount(ColumnedTable table, List<Part> answers, int lookUpAmount, int priceAmount, int row, string keyword)
