@@ -15,6 +15,8 @@ namespace ProduktFinderClient.Models
         FARNELL = 1,
         FUTURE = 2,
         MYARROW = 3,
+        SCHUKAT = 4,
+        REICHELT = 5,
     }
 
     public class Filter
@@ -34,13 +36,15 @@ namespace ProduktFinderClient.Models
             ModulesTranslation.Add(ModuleType.FARNELL, "Farnell");
             ModulesTranslation.Add(ModuleType.FUTURE, "Future");
             ModulesTranslation.Add(ModuleType.MYARROW, "MyArrow");
+            ModulesTranslation.Add(ModuleType.SCHUKAT, "Schukat");
+            ModulesTranslation.Add(ModuleType.REICHELT, "Reichelt");
         }
     }
 
     public class RequestHandler
     {
         private static readonly HttpClientQueue _httpQueue = new(10);
-        private static readonly string _baseUrl = @"http://localhost:5555/getParts/";
+        private static readonly string _baseUrl = @"http://localhost:7322/getParts/";
 
 
 
