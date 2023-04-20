@@ -176,7 +176,7 @@ namespace ProduktFinderClient.Commands
 
         private async Task ProcessRequest(ModuleType moduleType, ColumnedTable table, string keyword, int row, int orderAmount)
         {
-            List<Part>? answers = await RequestHandler.SearchWith(moduleType, keyword, 3, UpdateUserCallback);
+            List<Part>? answers = await RequestHandler.SearchWith(keyword, moduleType, 3, UpdateUserCallback);
             if (answers is null || answers.Count == 0)
                 return;
 

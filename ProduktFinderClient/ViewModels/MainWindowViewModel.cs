@@ -100,7 +100,7 @@ namespace ProduktFinderClient.ViewModels
         //ProduktBild Lieferant Hersteller Hersteller-TeileNr Beschreibung Lagerbestand Mengenpreise
         private void VisualizeGrid(object sender, List<Part>? rows)
         {
-            if (rows == null)
+            if (rows is null)
                 return;
 
             this.rows = rows;
@@ -114,9 +114,8 @@ namespace ProduktFinderClient.ViewModels
                 newRow[2] = rows[i].Manufacturer;
                 newRow[3] = rows[i].ManufacturerPartNumber;
                 newRow[4] = rows[i].Description;
-                newRow[5] = rows[i].AmountInStock.ToString();
-                newRow[6] = "";
-                newRow[7] = ConstructPrices(rows[i].Prices);
+                newRow[5] = (rows[i].AmountInStock is null || rows[i].AmountInStock == -1) ? "keine Angabe" : rows[i].AmountInStock.ToString();
+                newRow[6] = ConstructPrices(rows[i].Prices);
 
                 AttributesInfo attributesInfo = new AttributesInfo()
                 {
@@ -137,6 +136,9 @@ namespace ProduktFinderClient.ViewModels
 
             foreach (Price price in prices)
             {
+                if (price.FromAmount == -1 || price.PricePerPiece == -1.0f)
+                    continue;
+
                 s += "Ab " + price.FromAmount + " Stück " + price.PricePerPiece + " " + price.Currency + "\n";
             }
 
@@ -169,11 +171,14 @@ namespace ProduktFinderClient.ViewModels
         {
             if (update is null) return;
 
-            await Task.Delay(20);
-            UserUpdate = UserUpdate.Insert(0, update + "\n");
+            DateTime currentTime = DateTime.Now;
+            string formattedTime = currentTime.ToString("HH:mm");
 
-            if (UserUpdate.Length > 300)
-                UserUpdate = UserUpdate.Remove(150);
+            await Task.Delay(20);
+            UserUpdate = UserUpdate.Insert(0, $"<{formattedTime}> {update}\n");
+
+            if (UserUpdate.Length > 1024)
+                UserUpdate = UserUpdate.Remove(1024);
 
         }
 

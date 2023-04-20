@@ -56,7 +56,7 @@ namespace ProduktFinderClient.Commands
                     if (checkableString.IsChecked)
                     {
                         Filter.ModulesTranslation.TryGetKey(checkableString.AttributeName, out ModuleType moduleType);
-                        tasks.Add(RequestHandler.SearchWith(moduleType, keyword, numberSearchResults, UserUpdateCallback, (x) => SearchFinishedCallBack(mainWindowViewModel, x)));
+                        tasks.Add(RequestHandler.SearchWith(keyword, moduleType, numberSearchResults, UserUpdateCallback, (x) => SearchFinishedCallBack(mainWindowViewModel, x)));
                     }
                 }
 

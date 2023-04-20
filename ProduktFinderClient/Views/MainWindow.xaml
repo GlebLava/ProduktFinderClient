@@ -139,7 +139,7 @@
                     <ScrollViewer Style="{StaticResource DarkScrollViewerStyle}"
                                   DockPanel.Dock="Right"
                                   Margin="0, 0, 20, 0"
-                                  Width="250"
+                                  Width="400"
                                   Height="{Binding RelativeSource={RelativeSource AncestorType=local:MainWindow},Path=InfoBoxHeight}"
                                   HorizontalAlignment="Right"
                                   CanContentScroll="True"

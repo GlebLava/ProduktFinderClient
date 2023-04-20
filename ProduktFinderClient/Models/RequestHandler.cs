@@ -48,49 +48,28 @@ namespace ProduktFinderClient.Models
 
 
 
-        public static async Task SearchWith(ModuleType api, string keyword, int numberOfResultsPerAPI, Action<string> UpdateUserCallback, Action<List<Part>?> OnSearchFinishedCallback)
+        public static async Task SearchWith(string keyword, ModuleType api, int numberOfResultsPerAPI, Action<string> UpdateUserCallback, Action<List<Part>?> OnSearchFinishedCallback)
         {
-            var result = await SearchWith(api, keyword, numberOfResultsPerAPI, UpdateUserCallback);
+            var result = await SearchWith(keyword, api, numberOfResultsPerAPI, UpdateUserCallback);
             OnSearchFinishedCallback(result);
         }
 
 
-        public static async Task<List<Part>?> SearchWith(ModuleType api, string keyword, int numberOfResultsPerAPI, Action<string> UpdateUserCallback)
-        {
-            Filter filter = new Filter();
-            filter.ModulesToSearchWith.Add(api);
-
-            return await Search(keyword, filter, numberOfResultsPerAPI, UpdateUserCallback);
-        }
-
-        public static async Task<List<Part>?> Search(string keyword, Filter filter, int numberOfResultsPerAPI, Action<string> UpdateUserCallback)
+        public static async Task<List<Part>?> SearchWith(string keyword, ModuleType api, int numberOfResultsPerAPI, Action<string> UpdateUserCallback)
         {
             try
             {
                 keyword = FilterKeyWord(keyword);
 
                 // UPDATE USER
-                string userCallbackModules = "";
-                foreach (var module in filter.ModulesToSearchWith)
-                {
-                    Filter.ModulesTranslation.TryGetValue(module, out string moduleName);
-                    userCallbackModules += moduleName + ", ";
-                }
+                Filter.ModulesTranslation.TryGetValue(api, out string moduleName);
 
-                //Remove last Comma
-                userCallbackModules = userCallbackModules.Remove(userCallbackModules.Length - 2);
-                UpdateUserCallback?.Invoke("Am Suchen mit " + userCallbackModules);
+                UpdateUserCallback?.Invoke("Am Suchen mit " + moduleName);
                 // UPDATE USER END
 
+                string url = _baseUrl + keyword + ";" + numberOfResultsPerAPI.ToString() + ";" + api;
 
-
-                string sContent = JsonSerializer.Serialize<Filter>(filter);
-                StringContent stringContent = new StringContent(sContent, System.Text.Encoding.UTF8, "application/json");
-                string url = _baseUrl + keyword + ";" + numberOfResultsPerAPI.ToString();
-
-                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, url);
-                request.Content = stringContent;
-
+                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, url);
                 HttpResponseMessage? response = await _httpQueue.EnqueueAsync(request);
                 if (response is null)
                     throw new Exception("Problem with the HttpQueue");
@@ -104,12 +83,12 @@ namespace ProduktFinderClient.Models
                     });
 
 
-                    UpdateUserCallback?.Invoke(userCallbackModules + "  Suche fertig");
+                    UpdateUserCallback?.Invoke(moduleName + "  Suche fertig");
                     return results;
                 }
                 else
                 {
-                    UpdateUserCallback?.Invoke(userCallbackModules + "  hatte Probleme keine Antwort bekommen");
+                    UpdateUserCallback?.Invoke(moduleName + "  hatte Probleme. Keine Antwort bekommen");
                     return new List<Part>();
                 }
             }
