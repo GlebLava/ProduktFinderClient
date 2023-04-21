@@ -44,7 +44,7 @@ namespace ProduktFinderClient.Models
     public class RequestHandler
     {
         private static readonly HttpClientQueue _httpQueue = new(10);
-        private static readonly string _baseUrl = @"http://localhost:7322/getParts/";
+        private static readonly string _baseUrl = @"http://77.24.97.93:7555/getParts/";
 
 
 

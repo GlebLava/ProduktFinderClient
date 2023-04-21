@@ -9,12 +9,19 @@ namespace ProduktFinderClient.DataTypes
     public class HttpClientQueue
     {
         private readonly ConcurrentQueue<HttpRequestMessage> _queue = new ConcurrentQueue<HttpRequestMessage>();
-        private readonly HttpClient _httpClient = new HttpClient();
+        private readonly HttpClient _httpClient;
         private readonly SemaphoreSlim _semaphore;
 
         public HttpClientQueue(int maxConcurrency)
         {
             _semaphore = new SemaphoreSlim(maxConcurrency);
+
+            var handler = new HttpClientHandler
+            {
+                ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true
+            };
+
+            _httpClient = new HttpClient(handler);
         }
 
         public async Task<HttpResponseMessage?> EnqueueAsync(HttpRequestMessage request)
