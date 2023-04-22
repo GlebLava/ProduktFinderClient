@@ -9,7 +9,8 @@
         Title="ProduktFinder" Height="700" Width="1200" 
         WindowStyle="None"
         AllowsTransparency="True"
-        PreviewMouseWheel="Window_PreviewMouseWheel">
+        PreviewMouseWheel="Window_PreviewMouseWheel"
+        Icon="pficon.ico">
 
     <WindowChrome.WindowChrome>
         <WindowChrome CaptionHeight="35"/>
@@ -64,7 +65,7 @@
                             Command="{Binding OpenOptionsCommand}"
                             Style="{StaticResource WindowChromeFunctionalButton}">
                         <ContentControl Margin="5" 
-                                        Content="Optionen TEST"
+                                        Content="Optionen"
                                         FontSize="{Binding RelativeSource={RelativeSource AncestorType=Window},Path=FontSize}"/>
                     </Button>
 
