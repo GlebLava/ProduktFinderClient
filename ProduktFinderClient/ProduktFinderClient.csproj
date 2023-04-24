@@ -5,10 +5,15 @@
     <TargetFramework>net6.0-windows</TargetFramework>
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
+    <ApplicationIcon>Views\pficon.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
     <None Remove="Views\pficon.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Views\pficon.ico" />
   </ItemGroup>
 
   <ItemGroup>
