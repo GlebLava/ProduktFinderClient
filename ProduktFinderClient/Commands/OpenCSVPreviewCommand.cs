@@ -1,4 +1,5 @@
 ﻿using Microsoft.Win32;
+using ProduktFinderClient.Components;
 using ProduktFinderClient.CSV;
 using ProduktFinderClient.Models.ErrorLogging;
 using ProduktFinderClient.ViewModels;
@@ -15,11 +16,11 @@ namespace ProduktFinderClient.Commands
     {
 
         MainWindowViewModel mainWindowViewModel;
-        Action<string> UpdateUserCallback;
-        public OpenCSVPreviewCommand(MainWindowViewModel mainWindowViewModel, Action<string> UpdateUserCallback)
+        Func<StatusHandle> UserUpdateStatusHandleCreate;
+        public OpenCSVPreviewCommand(MainWindowViewModel mainWindowViewModel, Func<StatusHandle> UserUpdateStatusHandleCreate)
         {
             this.mainWindowViewModel = mainWindowViewModel;
-            this.UpdateUserCallback = UpdateUserCallback;
+            this.UserUpdateStatusHandleCreate = UserUpdateStatusHandleCreate;
         }
 
 
@@ -31,14 +32,15 @@ namespace ProduktFinderClient.Commands
                 openfileDialog.Filter = "CSV Files (*.csv)|*.csv";
                 if (openfileDialog.ShowDialog() == true)
                 {
-                    CSVPreviewViewModel context = new CSVPreviewViewModel(Path.GetFileName(openfileDialog.FileName), CSVParser.ParseCSVFile(openfileDialog.FileName), mainWindowViewModel, UpdateUserCallback);
+                    CSVPreviewViewModel context = new CSVPreviewViewModel(Path.GetFileName(openfileDialog.FileName), CSVParser.ParseCSVFile(openfileDialog.FileName), mainWindowViewModel, UserUpdateStatusHandleCreate);
                     CSVPreviewWindow window = new CSVPreviewWindow
                     {
                         DataContext = context
                     };
                     window.Show();
                 }
-            } catch (Exception e)
+            }
+            catch (Exception e)
             {
                 ErrorLogger.LogError(e, "Es wurde kein Keyword gesucht, der error ist in OpenCSVPreviewCommand aufgetreten");
             }

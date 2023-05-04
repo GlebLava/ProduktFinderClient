@@ -1,4 +1,5 @@
 ﻿using ProduktFinderClient.Commands;
+using ProduktFinderClient.Components;
 using ProduktFinderClient.DataTypes;
 using ProduktFinderClient.Models;
 using System;
@@ -48,16 +49,17 @@ namespace ProduktFinderClient.ViewModels
         }
 
         private List<Part> rows;
-
-        public MainWindowViewModel(OptionsWindowViewModel optionsWindowViewModel)
+        private StatusBlock statusBlock;
+        public MainWindowViewModel(OptionsWindowViewModel optionsWindowViewModel, StatusBlock statusBlock)
         {
+            this.statusBlock = statusBlock;
             // Init the observable colletion Lieferante from the Enum ModuleTypes and Filter from RequestHandler
             ObservableCollection<string> lieferanten = new ObservableCollection<string>();
             foreach (ModuleType moduleType in Enum.GetValues(typeof(ModuleType)))
             {
                 Filter.ModulesTranslation.TryGetValue(moduleType, out string moduleString);
                 lieferanten.Add(moduleString);
-            }  
+            }
 
             Lieferanten = new ObservableCollection<CheckableStringObject>
                 (CheckableStringObject.StringCollectionToCheckableStringObject(lieferanten, OnPropertyChanged));
@@ -71,14 +73,15 @@ namespace ProduktFinderClient.ViewModels
             optionsWindowViewModel.PropertyChanged += OnGridSettingsChanged;
 
             OpenOptionsCommand = new OpenOptionsCommand(optionsWindowViewModel);
-            SearchCommand = new SearchCommand(ClearGrid, VisualizeGrid, optionsWindowViewModel, this, SetUserUpdate);
-            OpenCSVPreviewCommand = new OpenCSVPreviewCommand(this, SetUserUpdate);
+            SearchCommand = new SearchCommand(ClearGrid, VisualizeGrid, optionsWindowViewModel, this, GetNewStatusHandle);
+            OpenCSVPreviewCommand = new OpenCSVPreviewCommand(this, GetNewStatusHandle);
             UserUpdate = "";
+            this.statusBlock = statusBlock;
         }
 
-        private void OnGridSettingsChanged(object sender, PropertyChangedEventArgs e)
+        private void OnGridSettingsChanged(object? sender, PropertyChangedEventArgs e)
         {
-            OptionsWindowViewModel options = sender as OptionsWindowViewModel;
+            OptionsWindowViewModel options = (sender as OptionsWindowViewModel)!;
 
             if (e.PropertyName == "Filters")
             {
@@ -98,7 +101,7 @@ namespace ProduktFinderClient.ViewModels
 
         //   0          1           2               3               4           5            6
         //ProduktBild Lieferant Hersteller Hersteller-TeileNr Beschreibung Lagerbestand Mengenpreise
-        private void VisualizeGrid(object sender, List<Part>? rows)
+        private void VisualizeGrid(object? sender, List<Part>? rows)
         {
             if (rows is null)
                 return;
@@ -161,28 +164,13 @@ namespace ProduktFinderClient.ViewModels
                 lieferant.IsChecked = true;
         }
 
-
-        private void SetUserUpdate(string? update)
+        private StatusHandle GetNewStatusHandle()
         {
-            _ = SetUserUpdateAsync(update);
+            lock (statusBlock)
+            {
+                return statusBlock.AddNewStatus();
+            }
         }
-
-        private async Task SetUserUpdateAsync(string? update)
-        {
-            if (update is null) return;
-
-            DateTime currentTime = DateTime.Now;
-            string formattedTime = currentTime.ToString("HH:mm");
-
-            await Task.Delay(20);
-            UserUpdate = UserUpdate.Insert(0, $"<{formattedTime}> {update}\n");
-
-            if (UserUpdate.Length > 1024)
-                UserUpdate = UserUpdate.Remove(1024);
-
-        }
-
-
 
     }
 }

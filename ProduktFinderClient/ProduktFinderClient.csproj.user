@@ -9,6 +9,14 @@
     </ApplicationDefinition>
   </ItemGroup>
   <ItemGroup>
+    <Compile Update="Components\StatusBlock.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Components\StatusBlock.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Update="Views\MainWindow.xaml">
       <SubType>Designer</SubType>
     </Page>

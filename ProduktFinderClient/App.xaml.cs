@@ -14,7 +14,7 @@ namespace ProduktFinderClient
     /// <summary>
     /// Interaction logic for App.xaml
     /// </summary>
-    
+
     public partial class App : Application
     {
         public static MainWindow mainWindow;
@@ -32,7 +32,7 @@ namespace ProduktFinderClient
 
         protected override void OnStartup(StartupEventArgs e)
         {
-            
+
 
             ObservableCollection<string> attributes = ColumnDefinitionsToOC(columnDefinitions);
 
@@ -43,7 +43,7 @@ namespace ProduktFinderClient
             OptionsWindowViewModel optionsWindowViewModel = new OptionsWindowViewModel(attributes, filter);
 
             mainWindow = new MainWindow();
-            MainWindowViewModel mainWindowViewModel = new MainWindowViewModel(optionsWindowViewModel);
+            MainWindowViewModel mainWindowViewModel = new MainWindowViewModel(optionsWindowViewModel, mainWindow.MainStatusBlock);
             mainWindow.DataContext = mainWindowViewModel;
 
             mainWindow.Show();

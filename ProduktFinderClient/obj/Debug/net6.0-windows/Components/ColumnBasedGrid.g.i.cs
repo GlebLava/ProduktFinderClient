@@ -77,7 +77,7 @@ namespace ProduktFinderClient.Components {
                 return;
             }
             _contentLoaded = true;
-            System.Uri resourceLocater = new System.Uri("/ProduktFinderClient;V1.0.0.0;component/components/columnbasedgrid.xaml", System.UriKind.Relative);
+            System.Uri resourceLocater = new System.Uri("/ProduktFinderClient;component/components/columnbasedgrid.xaml", System.UriKind.Relative);
             
             #line 1 "..\..\..\..\Components\ColumnBasedGrid.xaml"
             System.Windows.Application.LoadComponent(this, resourceLocater);

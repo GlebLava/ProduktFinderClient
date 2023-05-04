@@ -102,7 +102,7 @@ namespace ProduktFinderClient.Views {
                 return;
             }
             _contentLoaded = true;
-            System.Uri resourceLocater = new System.Uri("/ProduktFinderClient;V1.0.0.0;component/views/csvpreviewwindow.xaml", System.UriKind.Relative);
+            System.Uri resourceLocater = new System.Uri("/ProduktFinderClient;component/views/csvpreviewwindow.xaml", System.UriKind.Relative);
             
             #line 1 "..\..\..\..\Views\CSVPreviewWindow.xaml"
             System.Windows.Application.LoadComponent(this, resourceLocater);

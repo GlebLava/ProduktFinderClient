@@ -83,7 +83,7 @@
                     MouseLeave="Tools_MouseLeave"
                     HorizontalAlignment="Stretch">
 
-                <DockPanel>
+                <DockPanel LastChildFill="False">
                     <StackPanel Orientation="Horizontal" Name="Tools" Margin="0,10,0,10"
                                 DockPanel.Dock="Left">
                         <TextBox
@@ -137,27 +137,14 @@
 
                     </StackPanel>
 
-                    <ScrollViewer Style="{StaticResource DarkScrollViewerStyle}"
-                                  DockPanel.Dock="Right"
-                                  Margin="0, 0, 20, 0"
-                                  Width="400"
-                                  Height="{Binding RelativeSource={RelativeSource AncestorType=local:MainWindow},Path=InfoBoxHeight}"
-                                  HorizontalAlignment="Right"
-                                  CanContentScroll="True"
-                                  ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                                  ScrollViewer.VerticalScrollBarVisibility="Visible">
-
-                        <TextBlock x:Name="UserUpdate"
-                                   TextWrapping="Wrap"
-                                   Height="Auto"
-                                   Style="{StaticResource ToolbarTextBlock}"
-                                   Text="{Binding UserUpdate}"
-                                   FontSize="{Binding RelativeSource={RelativeSource AncestorType=local:MainWindow},Path=InfoBoxFontSize}">
-                        </TextBlock>
-
-                    </ScrollViewer>
-
-
+                    <components:StatusBlock x:Name="MainStatusBlock"
+                                            Margin="0,0,20,0"
+                                            DockPanel.Dock="Right"
+                                            Height="{Binding RelativeSource={RelativeSource AncestorType=local:MainWindow},Path=InfoBoxHeight}"
+                                            Width="400"
+                                            FontSize="{Binding RelativeSource={RelativeSource AncestorType=local:MainWindow},Path=InfoBoxFontSize}">
+                    </components:StatusBlock>
+                    
                 </DockPanel>
             </Border>
 

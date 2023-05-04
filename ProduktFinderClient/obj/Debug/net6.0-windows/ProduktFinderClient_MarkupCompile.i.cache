@@ -10,11 +10,11 @@ none
 false
 TRACE;DEBUG;NET;NET6_0;NETCOREAPP
 C:\Users\glebg\Desktop\HCS\ProduktFinderClient\ProduktFinderClientSol\ProduktFinderClient\App.xaml
-9-1537484158
-149048089
-40-480153353
+10-691577339
+
+411101190444
 194-97651837
-Components\ColumnBasedGrid.xaml;Components\DropdownMenuStyle.xaml;Components\TextGrid.xaml;MyResources\DarkScrollViewer.xaml;MyResources\MainStyleResource.xaml;Themes\Generic.xaml;Views\CSVPreviewWindow.xaml;Views\MainWindow.xaml;Views\OptionsWindow.xaml;
+Components\ColumnBasedGrid.xaml;Components\DropdownMenuStyle.xaml;Components\StatusBlock.xaml;Components\TextGrid.xaml;MyResources\DarkScrollViewer.xaml;MyResources\MainStyleResource.xaml;Themes\Generic.xaml;Views\CSVPreviewWindow.xaml;Views\MainWindow.xaml;Views\OptionsWindow.xaml;
 
 False
 

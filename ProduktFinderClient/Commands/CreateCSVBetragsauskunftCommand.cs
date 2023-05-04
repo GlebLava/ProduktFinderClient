@@ -1,4 +1,5 @@
-﻿using ProduktFinderClient.CSV;
+﻿using ProduktFinderClient.Components;
+using ProduktFinderClient.CSV;
 using ProduktFinderClient.DataTypes;
 using ProduktFinderClient.Models;
 using ProduktFinderClient.ViewModels;
@@ -13,7 +14,7 @@ namespace ProduktFinderClient.Commands
 {
     public class CreateCSVBetragsauskunftCommand : AsyncCommandBase
     {
-        Action<string> UpdateUserCallback;
+        Func<StatusHandle> UserUpdateStatusHandleCreate;
         MainWindowViewModel mainWindowViewModel;
         Func<string, string> RegexKeywordTransform;
         Func<CommandParams> GetCommandParamsFunc;
@@ -43,10 +44,10 @@ namespace ProduktFinderClient.Commands
             }
         }
 
-        public CreateCSVBetragsauskunftCommand(MainWindowViewModel mainWindowViewModel, CSVObject csv, Action<string> UpdateUserCallback, Func<string, string> RegexKeywordTransform, Func<CommandParams> GetCommandParamsFunc)
+        public CreateCSVBetragsauskunftCommand(MainWindowViewModel mainWindowViewModel, CSVObject csv, Func<StatusHandle> UserUpdateStatusHandleCreate, Func<string, string> RegexKeywordTransform, Func<CommandParams> GetCommandParamsFunc)
         {
             this.mainWindowViewModel = mainWindowViewModel;
-            this.UpdateUserCallback = UpdateUserCallback;
+            this.UserUpdateStatusHandleCreate = UserUpdateStatusHandleCreate;
             this.RegexKeywordTransform = RegexKeywordTransform;
             this.csv = csv;
             this.GetCommandParamsFunc = GetCommandParamsFunc;
@@ -176,7 +177,9 @@ namespace ProduktFinderClient.Commands
 
         private async Task ProcessRequest(ModuleType moduleType, ColumnedTable table, string keyword, int row, int orderAmount)
         {
-            List<Part>? answers = await RequestHandler.SearchWith(keyword, moduleType, 3, UpdateUserCallback);
+            StatusHandle statusHandle = UserUpdateStatusHandleCreate();
+
+            List<Part>? answers = await RequestHandler.SearchWith(keyword, moduleType, 3, statusHandle);
             if (answers is null || answers.Count == 0)
                 return;
 
@@ -189,7 +192,7 @@ namespace ProduktFinderClient.Commands
         ///<summary>returns true if an answer in answers has |parts| >= orderAmount </summary>
         private bool SetTablesForOrderAmount(ColumnedTable table, List<Part> answers, int lookUpAmount, int priceAmount, int row, string keyword)
         {
-            
+
             foreach (var answer in answers)
             {
                 if (answer.AmountInStock < lookUpAmount)
@@ -204,7 +207,7 @@ namespace ProduktFinderClient.Commands
                 table.SetField(row, 3, FindPriceInPrices(priceAmount, answer.Prices));
                 return true;
             }
-            
+
             return false;
         }
 

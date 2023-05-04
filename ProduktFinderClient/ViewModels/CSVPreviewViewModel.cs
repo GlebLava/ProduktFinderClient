@@ -1,23 +1,24 @@
-﻿using ProduktFinderClient.Commands;
+﻿using Microsoft.Win32;
+using ProduktFinderClient.Commands;
+using ProduktFinderClient.Components;
 using ProduktFinderClient.CSV;
+using ProduktFinderClient.DataTypes;
+using ProduktFinderClient.Models;
 using ProduktFinderClient.Views;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.IO;
 using System.Text;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
-using ProduktFinderClient.DataTypes;
-using Microsoft.Win32;
-using ProduktFinderClient.Models;
-using System.IO;
-using System.Diagnostics;
-using System.Threading.Tasks;
-using System.Text.RegularExpressions;
 
 namespace ProduktFinderClient.ViewModels
 {
-   
+
     public class CSVPreviewViewModel : ViewModelBase
     {
 
@@ -27,7 +28,7 @@ namespace ProduktFinderClient.ViewModels
         public ObservableCollection<StringWithCommand> Bedarf
         {
             get { return bedarf; }
-            set { bedarf = value; OnPropertyChanged(nameof(Bedarf));}
+            set { bedarf = value; OnPropertyChanged(nameof(Bedarf)); }
         }
 
         private int h_ArtikelnummerIndex = -1;
@@ -35,7 +36,7 @@ namespace ProduktFinderClient.ViewModels
         public ObservableCollection<StringWithCommand> H_Artikelnummer
         {
             get { return h_Artikelnummer; }
-            set { h_Artikelnummer = value; OnPropertyChanged(nameof(H_Artikelnummer));}
+            set { h_Artikelnummer = value; OnPropertyChanged(nameof(H_Artikelnummer)); }
         }
 
         private int hcs_ArtikelnummerIndex = -1;
@@ -100,7 +101,7 @@ namespace ProduktFinderClient.ViewModels
         #endregion
 
         CSVObject csv;
-        public CSVPreviewViewModel(string inputFile, CSVObject csvin, MainWindowViewModel mainWindowViewModel, Action<string> UpdateUserCallback)
+        public CSVPreviewViewModel(string inputFile, CSVObject csvin, MainWindowViewModel mainWindowViewModel, Func<StatusHandle> UserUpdateStatusHandleCreate)
         {
             csv = csvin;
             Bedarf = new ObservableCollection<StringWithCommand>();
@@ -111,11 +112,11 @@ namespace ProduktFinderClient.ViewModels
             {
                 //Some optimization for for loops makes i in lambdas not work
                 int index = i;
-                Bedarf.Add(new StringWithCommand((o) => { BedarfTitel = csvin.GetHeader(index);  bedarfIndex = index; OnChangePreviewGrid(); }, 
+                Bedarf.Add(new StringWithCommand((o) => { BedarfTitel = csvin.GetHeader(index); bedarfIndex = index; OnChangePreviewGrid(); },
                     csvin.GetHeader(index)));
                 H_Artikelnummer.Add(new StringWithCommand((o) => { H_ArtikelnummerTitel = csvin.GetHeader(index); h_ArtikelnummerIndex = index; OnChangePreviewGrid(); },
                     csvin.GetHeader(index)));
-                HCS_Artikelnummer.Add(new StringWithCommand((o) => {HCS_ArtikelnummerTitel = csvin.GetHeader(index); hcs_ArtikelnummerIndex = index; OnChangePreviewGrid(); },          
+                HCS_Artikelnummer.Add(new StringWithCommand((o) => { HCS_ArtikelnummerTitel = csvin.GetHeader(index); hcs_ArtikelnummerIndex = index; OnChangePreviewGrid(); },
                     csvin.GetHeader(index)));
             }
 
@@ -125,8 +126,9 @@ namespace ProduktFinderClient.ViewModels
             H_ArtikelnummerTitel = SetToIfNotFound(ref h_ArtikelnummerIndex, "H_Artikelnummer auswählen", LoadSaveSystem.hArtikelNrMostUsedKeywordsModule);
             HCS_ArtikelnummerTitel = SetToIfNotFound(ref hcs_ArtikelnummerIndex, "HCS_Artikelnummer auswählen", LoadSaveSystem.hcsArtikelNrMostUsedKeywordsModule);
 
-           
-            ChooseSavePathCommand = new FastCommand((o) => {
+
+            ChooseSavePathCommand = new FastCommand((o) =>
+            {
                 SaveFileDialog saveFileDialog = new SaveFileDialog();
                 saveFileDialog.Filter = "CSV Files (*.csv)|*.csv";
                 saveFileDialog.FileName = Path.GetFileNameWithoutExtension(inputFile) + "_Bedarfsauskunft.csv";
@@ -137,8 +139,8 @@ namespace ProduktFinderClient.ViewModels
                     LoadSaveSystem.SaveLastUsedSaveFile(saveFileDialog.FileName);
                 }
             });
- 
-            BedarfsauskunftsCommand = new CreateCSVBetragsauskunftCommand(mainWindowViewModel, csvin, UpdateUserCallback, TransformString, CommandParams);
+
+            BedarfsauskunftsCommand = new CreateCSVBetragsauskunftCommand(mainWindowViewModel, csvin, UserUpdateStatusHandleCreate, TransformString, CommandParams);
 
             OnChangePreviewGrid();
         }
@@ -167,8 +169,8 @@ namespace ProduktFinderClient.ViewModels
         }
 
         private CreateCSVBetragsauskunftCommand.CommandParams CommandParams()
-        { 
-            return new CreateCSVBetragsauskunftCommand.CommandParams(SavePath, BedarfTitel, bedarfIndex, H_ArtikelnummerTitel, h_ArtikelnummerIndex, HCS_ArtikelnummerTitel, hcs_ArtikelnummerIndex); 
+        {
+            return new CreateCSVBetragsauskunftCommand.CommandParams(SavePath, BedarfTitel, bedarfIndex, H_ArtikelnummerTitel, h_ArtikelnummerIndex, HCS_ArtikelnummerTitel, hcs_ArtikelnummerIndex);
         }
 
         private void OnChangePreviewGrid()

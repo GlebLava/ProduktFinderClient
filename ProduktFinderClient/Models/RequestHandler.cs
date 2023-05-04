@@ -1,11 +1,12 @@
-﻿using ProduktFinderClient.Models.ErrorLogging;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using ProduktFinderClient.Components;
+using ProduktFinderClient.DataTypes;
+using ProduktFinderClient.Models.ErrorLogging;
 using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Text.Json;
-using ProduktFinderClient.DataTypes;
-
+using System.Threading.Tasks;
+using System.Windows.Media;
 
 namespace ProduktFinderClient.Models
 {
@@ -44,18 +45,19 @@ namespace ProduktFinderClient.Models
     public class RequestHandler
     {
         private static readonly HttpClientQueue _httpQueue = new(10);
-        private static readonly string _baseUrl = @"http://77.24.97.93:7555/getParts/";
+        //private static readonly string _baseUrl = @"http://77.24.97.93:7555/getParts/";
+        private static readonly string _baseUrl = @"https://localhost:7321/getParts/";
 
 
 
-        public static async Task SearchWith(string keyword, ModuleType api, int numberOfResultsPerAPI, Action<string> UpdateUserCallback, Action<List<Part>?> OnSearchFinishedCallback)
+        public static async Task SearchWith(string keyword, ModuleType api, int numberOfResultsPerAPI, StatusHandle statusHandle, Action<List<Part>?> OnSearchFinishedCallback)
         {
-            var result = await SearchWith(keyword, api, numberOfResultsPerAPI, UpdateUserCallback);
+            var result = await SearchWith(keyword, api, numberOfResultsPerAPI, statusHandle);
             OnSearchFinishedCallback(result);
         }
 
 
-        public static async Task<List<Part>?> SearchWith(string keyword, ModuleType api, int numberOfResultsPerAPI, Action<string> UpdateUserCallback)
+        public static async Task<List<Part>?> SearchWith(string keyword, ModuleType api, int numberOfResultsPerAPI, StatusHandle statusHandle)
         {
             try
             {
@@ -63,9 +65,11 @@ namespace ProduktFinderClient.Models
 
                 // UPDATE USER
                 Filter.ModulesTranslation.TryGetValue(api, out string moduleName);
-
-                UpdateUserCallback?.Invoke("Am Suchen mit " + moduleName);
+                DateTime currentTime = DateTime.Now;
+                string formattedTime = currentTime.ToString("HH:mm");
+                statusHandle.TextLeft = $"<{formattedTime}> {moduleName} \"{keyword}\" ";
                 // UPDATE USER END
+
 
                 string url = _baseUrl + keyword + ";" + numberOfResultsPerAPI.ToString() + ";" + api;
 
@@ -74,31 +78,49 @@ namespace ProduktFinderClient.Models
                 if (response is null)
                     throw new Exception("Problem with the HttpQueue");
 
-                if (CheckErrorCodes(response))
+                if (!CheckErrorCodes(response))
                 {
-                    string answer = await response.Content.ReadAsStringAsync();
-                    List<Part>? results = JsonSerializer.Deserialize<List<Part>>(answer, new JsonSerializerOptions
-                    {
-                        PropertyNameCaseInsensitive = true
-                    });
+                    UpdateUserError(statusHandle, "Bei dem Modul trat ein Problem auf. Keine Antwort bekommen", keyword);
+                    return null;
+                }
 
 
-                    UpdateUserCallback?.Invoke(moduleName + "  Suche fertig");
-                    return results;
-                }
-                else
+                string answer = await response.Content.ReadAsStringAsync();
+                ProduktFinderResponse? produktFinderResponse = JsonSerializer.Deserialize<ProduktFinderResponse>(answer, new JsonSerializerOptions
                 {
-                    UpdateUserCallback?.Invoke(moduleName + "  hatte Probleme. Keine Antwort bekommen");
-                    return new List<Part>();
+                    PropertyNameCaseInsensitive = true
+                });
+
+                if (produktFinderResponse is null)
+                {
+                    UpdateUserError(statusHandle, "Bei dem Modul trat ein Problem auf. Keine Antwort bekommen", keyword);
+                    return null;
                 }
+
+                if (produktFinderResponse.ErrorReport is not null)
+                {
+                    UpdateUserError(statusHandle, produktFinderResponse.ErrorReport.ErrorDescription, keyword);
+                    return null;
+                }
+
+                List<Part> results = produktFinderResponse.Parts;
+                statusHandle.TextRight = $" Suche fertig {results.Count} Teile gefunden";
+                statusHandle.ColorRight = Colors.Green;
+                return results;
             }
             catch (Exception e)
             {
                 ErrorLogger.LogError(e, keyword);
                 return null;
             }
-
         }
+
+        private static void UpdateUserError(StatusHandle statusHandle, string message, string keyword)
+        {
+            statusHandle.ColorRight = Colors.DarkRed;
+            statusHandle.TextRight = " " + message;
+        }
+
 
         private static bool CheckErrorCodes(HttpResponseMessage responseMessage)
         {

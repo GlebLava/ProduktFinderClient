@@ -1,7 +1,22 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace ProduktFinderClient.Models
 {
+    public class ProduktFinderResponse
+    {
+        public ProduktFinderErrorReport? ErrorReport { get; set; }
+        public List<Part> Parts { get; set; } = new List<Part>();
+    }
+
+    public class ProduktFinderErrorReport
+    {
+        public string ErrorDescription { get; set; } = "";
+    }
+
     public class Part
     {
         public string? Hyperlink { get; set; }
@@ -31,5 +46,4 @@ namespace ProduktFinderClient.Models
         public int Quantity { get; set; } = 0;
         public string? ExpectedArrivalDate { get; set; }
     }
-
 }

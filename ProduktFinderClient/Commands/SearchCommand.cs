@@ -1,4 +1,5 @@
-﻿using ProduktFinderClient.Models;
+﻿using ProduktFinderClient.Components;
+using ProduktFinderClient.Models;
 using ProduktFinderClient.ViewModels;
 using System;
 using System.Collections.Generic;
@@ -10,19 +11,19 @@ namespace ProduktFinderClient.Commands
     {
         Action<object, List<Part>?> SearchFinishedCallBack;
         Action SearchBeganCallBack;
-        Action<string> UserUpdateCallback;
+        Func<StatusHandle> UserUpdateStatusHandleCreate;
 
 
         OptionsWindowViewModel optionsWindowViewModel;
         MainWindowViewModel mainWindowViewModel;
-        public SearchCommand(Action SearchBeganCallBack, Action<object, List<Part>?> SearchFinishedCallBack, OptionsWindowViewModel optionsWindowViewModel, MainWindowViewModel mainWindowViewModel, Action<string> UserUpdateCallback)
+        public SearchCommand(Action SearchBeganCallBack, Action<object, List<Part>?> SearchFinishedCallBack, OptionsWindowViewModel optionsWindowViewModel, MainWindowViewModel mainWindowViewModel, Func<StatusHandle> UserUpdateStatusHandleCreate)
         {
             this.SearchFinishedCallBack = SearchFinishedCallBack;
             this.SearchBeganCallBack = SearchBeganCallBack;
             this.optionsWindowViewModel = optionsWindowViewModel;
             this.mainWindowViewModel = mainWindowViewModel;
 
-            this.UserUpdateCallback = UserUpdateCallback;
+            this.UserUpdateStatusHandleCreate = UserUpdateStatusHandleCreate;
         }
 
         /// <summary>
@@ -55,8 +56,10 @@ namespace ProduktFinderClient.Commands
                 {
                     if (checkableString.IsChecked)
                     {
+                        StatusHandle statusHandle = UserUpdateStatusHandleCreate();
+
                         Filter.ModulesTranslation.TryGetKey(checkableString.AttributeName, out ModuleType moduleType);
-                        tasks.Add(RequestHandler.SearchWith(keyword, moduleType, numberSearchResults, UserUpdateCallback, (x) => SearchFinishedCallBack(mainWindowViewModel, x)));
+                        tasks.Add(RequestHandler.SearchWith(keyword, moduleType, numberSearchResults, statusHandle, (x) => SearchFinishedCallBack(mainWindowViewModel, x)));
                     }
                 }
 
