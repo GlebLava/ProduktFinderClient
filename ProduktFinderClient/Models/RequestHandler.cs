@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media;
 
@@ -50,14 +51,16 @@ namespace ProduktFinderClient.Models
 
 
 
-        public static async Task SearchWith(string keyword, ModuleType api, int numberOfResultsPerAPI, StatusHandle statusHandle, Action<List<Part>?> OnSearchFinishedCallback)
+        public static async Task SearchWith(string keyword, ModuleType api, int numberOfResultsPerAPI, StatusHandle statusHandle, Action<List<Part>?> OnSearchFinishedCallback, CancellationToken cancellationToken)
         {
-            var result = await SearchWith(keyword, api, numberOfResultsPerAPI, statusHandle);
-            OnSearchFinishedCallback(result);
+            var result = await SearchWith(keyword, api, numberOfResultsPerAPI, statusHandle, cancellationToken);
+
+            if (!cancellationToken.IsCancellationRequested)
+                OnSearchFinishedCallback(result);
         }
 
 
-        public static async Task<List<Part>?> SearchWith(string keyword, ModuleType api, int numberOfResultsPerAPI, StatusHandle statusHandle)
+        public static async Task<List<Part>?> SearchWith(string keyword, ModuleType api, int numberOfResultsPerAPI, StatusHandle statusHandle, CancellationToken cancellationToken)
         {
             try
             {
@@ -73,8 +76,20 @@ namespace ProduktFinderClient.Models
 
                 string url = _baseUrl + keyword + ";" + numberOfResultsPerAPI.ToString() + ";" + api;
 
-                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, url);
-                HttpResponseMessage? response = await _httpQueue.EnqueueAsync(request);
+                HttpRequestMessage request = new(HttpMethod.Get, url);
+                HttpResponseMessage? response = null;
+
+                try
+                {
+                    response = await _httpQueue.EnqueueAsync(request, cancellationToken);
+                }
+                catch (OperationCanceledException)
+                {
+                    UpdateUserError(statusHandle, "Suche Abbgebrochen", keyword);
+                    return null;
+                }
+
+
                 if (response is null)
                     throw new Exception("Problem with the HttpQueue");
 
@@ -117,7 +132,7 @@ namespace ProduktFinderClient.Models
 
         private static void UpdateUserError(StatusHandle statusHandle, string message, string keyword)
         {
-            statusHandle.ColorRight = Colors.DarkRed;
+            statusHandle.ColorRight = Colors.Red;
             statusHandle.TextRight = " " + message;
         }
 

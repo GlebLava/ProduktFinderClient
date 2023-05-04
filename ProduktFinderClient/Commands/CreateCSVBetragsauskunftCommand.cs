@@ -8,11 +8,12 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ProduktFinderClient.Commands
 {
-    public class CreateCSVBetragsauskunftCommand : AsyncCommandBase
+    public class CreateCSVBetragsauskunftCommand : AsyncCancelCommandBase
     {
         Func<StatusHandle> UserUpdateStatusHandleCreate;
         MainWindowViewModel mainWindowViewModel;
@@ -44,7 +45,9 @@ namespace ProduktFinderClient.Commands
             }
         }
 
-        public CreateCSVBetragsauskunftCommand(MainWindowViewModel mainWindowViewModel, CSVObject csv, Func<StatusHandle> UserUpdateStatusHandleCreate, Func<string, string> RegexKeywordTransform, Func<CommandParams> GetCommandParamsFunc)
+        public CreateCSVBetragsauskunftCommand(string normalText, string cancelText, Action<string> SetButtonContent,
+            MainWindowViewModel mainWindowViewModel, CSVObject csv, Func<StatusHandle> UserUpdateStatusHandleCreate, Func<string, string> RegexKeywordTransform, Func<CommandParams> GetCommandParamsFunc)
+            : base(normalText, cancelText, SetButtonContent)
         {
             this.mainWindowViewModel = mainWindowViewModel;
             this.UserUpdateStatusHandleCreate = UserUpdateStatusHandleCreate;
@@ -64,9 +67,8 @@ namespace ProduktFinderClient.Commands
         /// </summary>
         /// <param name="parameter"></param>
         /// <returns></returns>
-        protected override async Task ExecuteAsync(object parameter)
+        protected override async Task ExecuteAsync(object? parameter, CancellationToken cancellationToken)
         {
-
             CommandParams cparams = GetCommandParamsFunc();
 
             LoadSaveSystem.bedarfMostUsedKeywordsModule.RegisterKeyword(RegexKeywordTransform(cparams.bedarfTitel));
@@ -122,14 +124,16 @@ namespace ProduktFinderClient.Commands
             {
                 ColumnedTable table = apiTables[tableIndex];
                 tableIndex++;
-                tasks.Add(FillTable(moduleType, table, cparams));
+                tasks.Add(FillTable(moduleType, table, cparams, cancellationToken));
             }
             await Task.WhenAll(tasks);
 
 
+            if (cancellationToken.IsCancellationRequested)
+                return;
+
             apiTables.Insert(0, mainTable);
             ColumnedTable combinedTable = ColumnedTable.Combine(apiTables.ToArray());
-
 
 
             using (StreamWriter sw = File.CreateText(cparams.savePath))
@@ -154,16 +158,17 @@ namespace ProduktFinderClient.Commands
         }
 
 
-        private async Task FillTable(ModuleType moduleType, ColumnedTable table, CommandParams cparams)
+        private async Task FillTable(ModuleType moduleType, ColumnedTable table, CommandParams cparams, CancellationToken cancellationToken)
         {
+
             List<Task> tasks = new();
-            for (int i = 0; i < csv.FieldsLength; i++)
+            for (int i = 0; i < csv.FieldsLength && !cancellationToken.IsCancellationRequested; i++)
             {
                 table.AddNewRow();
                 int orderAmount = ExtractIntFromOrderAmount(csv.GetField(i, cparams.bedarfIndex));
                 string keyword = csv.GetField(i, cparams.h_ArtikelnummerIndex);
 
-                tasks.Add(ProcessRequest(moduleType, table, keyword, i, orderAmount));
+                tasks.Add(ProcessRequest(moduleType, table, keyword, i, orderAmount, cancellationToken));
                 if (tasks.Count >= 5)
                 {
                     await Task.WhenAll(tasks);
@@ -175,11 +180,11 @@ namespace ProduktFinderClient.Commands
             await Task.WhenAll(tasks);
         }
 
-        private async Task ProcessRequest(ModuleType moduleType, ColumnedTable table, string keyword, int row, int orderAmount)
+        private async Task ProcessRequest(ModuleType moduleType, ColumnedTable table, string keyword, int row, int orderAmount, CancellationToken cancellationToken)
         {
             StatusHandle statusHandle = UserUpdateStatusHandleCreate();
 
-            List<Part>? answers = await RequestHandler.SearchWith(keyword, moduleType, 3, statusHandle);
+            List<Part>? answers = await RequestHandler.SearchWith(keyword, moduleType, 3, statusHandle, cancellationToken);
             if (answers is null || answers.Count == 0)
                 return;
 

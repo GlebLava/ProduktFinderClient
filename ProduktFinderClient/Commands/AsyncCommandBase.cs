@@ -15,20 +15,20 @@ namespace ProduktFinderClient.Commands
             set { isExecuting = value; CanExecuteChanged?.Invoke(this, new EventArgs()); }
         }
 
-        public event EventHandler CanExecuteChanged;
+        public event EventHandler? CanExecuteChanged;
 
-        public bool CanExecute(object parameter)
+        public bool CanExecute(object? parameter)
         {
             return !isExecuting;
         }
 
-        public async void Execute(object parameter)
+        public async void Execute(object? parameter)
         {
             IsExecuting = true;
             await ExecuteAsync(parameter);  //mit try catch kann man hier exceptions handeln
             IsExecuting = false;
         }
 
-        protected abstract Task ExecuteAsync(object parameter);
+        protected abstract Task ExecuteAsync(object? parameter);
     }
 }

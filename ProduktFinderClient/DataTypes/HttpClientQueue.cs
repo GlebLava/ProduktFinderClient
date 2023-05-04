@@ -26,13 +26,18 @@ namespace ProduktFinderClient.DataTypes
 
         public async Task<HttpResponseMessage?> EnqueueAsync(HttpRequestMessage request)
         {
+            return await EnqueueAsync(request, CancellationToken.None);
+        }
+
+        public async Task<HttpResponseMessage?> EnqueueAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
             _queue.Enqueue(request);
             await _semaphore.WaitAsync(); // Acquire a slot from the semaphore
             try
             {
                 while (_queue.TryDequeue(out var queuedRequest))
                 {
-                    var response = await _httpClient.SendAsync(queuedRequest);
+                    var response = await _httpClient.SendAsync(queuedRequest, cancellationToken);
                     return response;
                 }
             }

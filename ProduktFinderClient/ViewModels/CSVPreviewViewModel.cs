@@ -97,6 +97,12 @@ namespace ProduktFinderClient.ViewModels
             set { previewGrid = value; OnPropertyChanged(nameof(PreviewGrid)); }
         }
 
+        private string buttonContent;
+        public string ButtonContent
+        {
+            get { return buttonContent; }
+            set { buttonContent = value; OnPropertyChanged(nameof(ButtonContent)); }
+        }
 
         #endregion
 
@@ -140,7 +146,8 @@ namespace ProduktFinderClient.ViewModels
                 }
             });
 
-            BedarfsauskunftsCommand = new CreateCSVBetragsauskunftCommand(mainWindowViewModel, csvin, UserUpdateStatusHandleCreate, TransformString, CommandParams);
+            BedarfsauskunftsCommand = new CreateCSVBetragsauskunftCommand("Starten", "Abbrechen", s => ButtonContent = s,
+                mainWindowViewModel, csvin, UserUpdateStatusHandleCreate, TransformString, CommandParams);
 
             OnChangePreviewGrid();
         }

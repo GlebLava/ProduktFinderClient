@@ -189,7 +189,7 @@
                         Width="Auto"
                         HorizontalAlignment="Right"
                         Command="{Binding BedarfsauskunftsCommand}">
-                    <ContentControl Content="Start"
+                    <ContentControl Content="{Binding ButtonContent}"
                                     Margin="5"/>
                 </Button>
 

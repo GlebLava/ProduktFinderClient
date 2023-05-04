@@ -3,11 +3,12 @@ using ProduktFinderClient.Models;
 using ProduktFinderClient.ViewModels;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ProduktFinderClient.Commands
 {
-    public class SearchCommand : AsyncCommandBase
+    public class SearchCommand : AsyncCancelCommandBase
     {
         Action<object, List<Part>?> SearchFinishedCallBack;
         Action SearchBeganCallBack;
@@ -16,7 +17,8 @@ namespace ProduktFinderClient.Commands
 
         OptionsWindowViewModel optionsWindowViewModel;
         MainWindowViewModel mainWindowViewModel;
-        public SearchCommand(Action SearchBeganCallBack, Action<object, List<Part>?> SearchFinishedCallBack, OptionsWindowViewModel optionsWindowViewModel, MainWindowViewModel mainWindowViewModel, Func<StatusHandle> UserUpdateStatusHandleCreate)
+        public SearchCommand(string normalText, string cancelText, Action<string> SetButtonContent, Action SearchBeganCallBack, Action<object, List<Part>?> SearchFinishedCallBack, OptionsWindowViewModel optionsWindowViewModel, MainWindowViewModel mainWindowViewModel, Func<StatusHandle> UserUpdateStatusHandleCreate)
+        : base(normalText, cancelText, SetButtonContent)
         {
             this.SearchFinishedCallBack = SearchFinishedCallBack;
             this.SearchBeganCallBack = SearchBeganCallBack;
@@ -30,7 +32,7 @@ namespace ProduktFinderClient.Commands
         /// param is the keyword as a string
         /// </summary>
         /// <param name="parameter"></param>
-        protected override async Task ExecuteAsync(object? parameter)
+        protected override async Task ExecuteAsync(object? parameter, CancellationToken cancalationToken)
         {
             if (parameter is null) return;
 
@@ -59,7 +61,8 @@ namespace ProduktFinderClient.Commands
                         StatusHandle statusHandle = UserUpdateStatusHandleCreate();
 
                         Filter.ModulesTranslation.TryGetKey(checkableString.AttributeName, out ModuleType moduleType);
-                        tasks.Add(RequestHandler.SearchWith(keyword, moduleType, numberSearchResults, statusHandle, (x) => SearchFinishedCallBack(mainWindowViewModel, x)));
+                        tasks.Add(RequestHandler.SearchWith(keyword, moduleType, numberSearchResults,
+                            statusHandle, (x) => SearchFinishedCallBack(mainWindowViewModel, x), cancalationToken));
                     }
                 }
 

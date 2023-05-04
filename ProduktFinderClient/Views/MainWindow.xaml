@@ -108,8 +108,9 @@
                             CommandParameter="{Binding Text, ElementName=KeywordSearchBox}"
                             Style="{StaticResource ToolbarButton}">
                             <ContentControl Margin="5" 
-                                        Content="Search"
-                                        FontSize="{Binding RelativeSource={RelativeSource AncestorType=Window},Path=FontSize}"/>
+                                        Content="{Binding SearchButtonContent}"
+                                        FontSize="{Binding RelativeSource={RelativeSource AncestorType=Window},Path=FontSize}">
+                            </ContentControl>
                         </Button>
 
                         <components:DropdownMenu 

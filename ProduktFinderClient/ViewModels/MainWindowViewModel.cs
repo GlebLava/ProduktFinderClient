@@ -15,6 +15,14 @@ namespace ProduktFinderClient.ViewModels
     {
 
         public ICommand SearchCommand { get; }
+
+        public string searchButtonContent;
+        public string SearchButtonContent
+        {
+            get { return searchButtonContent; }
+            set { searchButtonContent = value; OnPropertyChanged(nameof(SearchButtonContent)); }
+        }
+
         public ICommand OpenOptionsCommand { get; }
         public ICommand OpenCSVPreviewCommand { get; }
 
@@ -53,6 +61,7 @@ namespace ProduktFinderClient.ViewModels
         public MainWindowViewModel(OptionsWindowViewModel optionsWindowViewModel, StatusBlock statusBlock)
         {
             this.statusBlock = statusBlock;
+
             // Init the observable colletion Lieferante from the Enum ModuleTypes and Filter from RequestHandler
             ObservableCollection<string> lieferanten = new ObservableCollection<string>();
             foreach (ModuleType moduleType in Enum.GetValues(typeof(ModuleType)))
@@ -73,7 +82,7 @@ namespace ProduktFinderClient.ViewModels
             optionsWindowViewModel.PropertyChanged += OnGridSettingsChanged;
 
             OpenOptionsCommand = new OpenOptionsCommand(optionsWindowViewModel);
-            SearchCommand = new SearchCommand(ClearGrid, VisualizeGrid, optionsWindowViewModel, this, GetNewStatusHandle);
+            SearchCommand = new SearchCommand("Suchen", "Abbrechen", s => SearchButtonContent = s, ClearGrid, VisualizeGrid, optionsWindowViewModel, this, GetNewStatusHandle);
             OpenCSVPreviewCommand = new OpenCSVPreviewCommand(this, GetNewStatusHandle);
             UserUpdate = "";
             this.statusBlock = statusBlock;
