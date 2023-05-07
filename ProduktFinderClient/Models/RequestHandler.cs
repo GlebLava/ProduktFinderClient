@@ -19,6 +19,7 @@ namespace ProduktFinderClient.Models
         MYARROW = 3,
         SCHUKAT = 4,
         REICHELT = 5,
+        DIGI_KEY = 6,
     }
 
     public class Filter
@@ -40,13 +41,14 @@ namespace ProduktFinderClient.Models
             ModulesTranslation.Add(ModuleType.MYARROW, "MyArrow");
             ModulesTranslation.Add(ModuleType.SCHUKAT, "Schukat");
             ModulesTranslation.Add(ModuleType.REICHELT, "Reichelt");
+            ModulesTranslation.Add(ModuleType.DIGI_KEY, "DigiKey");
         }
     }
 
     public class RequestHandler
     {
         private static readonly HttpClientQueue _httpQueue = new(10);
-        //private static readonly string _baseUrl = @"http://77.24.97.93:7555/getParts/";
+        //private static readonly string _baseUrl = @"https://77.24.97.93:7556/getParts/";
         private static readonly string _baseUrl = @"https://localhost:7321/getParts/";
 
 
