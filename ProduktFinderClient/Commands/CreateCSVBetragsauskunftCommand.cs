@@ -10,6 +10,7 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace ProduktFinderClient.Commands
 {
@@ -70,6 +71,16 @@ namespace ProduktFinderClient.Commands
         protected override async Task ExecuteAsync(object? parameter, CancellationToken cancellationToken)
         {
             CommandParams cparams = GetCommandParamsFunc();
+
+            if (File.Exists(cparams.savePath))
+            {
+                if (MessageBox.Show($"Die Datei {cparams.savePath} existiert schon." +
+                    $" Soll diese überschrieben werden?", "Achtung", MessageBoxButton.OKCancel, MessageBoxImage.Warning) == MessageBoxResult.No)
+                {
+                    return;
+                }
+            }
+
 
             LoadSaveSystem.bedarfMostUsedKeywordsModule.RegisterKeyword(RegexKeywordTransform(cparams.bedarfTitel));
             LoadSaveSystem.hArtikelNrMostUsedKeywordsModule.RegisterKeyword(RegexKeywordTransform(cparams.h_ArtikelnummerTitel));
@@ -135,18 +146,58 @@ namespace ProduktFinderClient.Commands
             apiTables.Insert(0, mainTable);
             ColumnedTable combinedTable = ColumnedTable.Combine(apiTables.ToArray());
 
+            WriteAndOpenCSVFileWithRenameIfFileIsInUse(cparams.savePath, combinedTable.ConvertToCSVString(new StringBuilder()));
+        }
 
-            using (StreamWriter sw = File.CreateText(cparams.savePath))
+
+        /// <summary>
+        /// If the file at filePath already exists but is not in use, it will be overwritten
+        /// If the file at filePath already exists but is in use, a new fileName with an incrementing index will be used
+        /// fileNames with the same incremented index name that are not in use will NOT be overwritten.
+        /// </summary>
+        /// <param name="filePath">Full path of the file with name and extension to write into</param>
+        /// <param name="content">What to write into the file</param>
+        private void WriteAndOpenCSVFileWithRenameIfFileIsInUse(string filePath, string content)
+        {
+
+            int appendCount = 0;
+            string fileName = Path.GetFileNameWithoutExtension(filePath);
+            string extension = Path.GetExtension(filePath);
+            string dir = Path.GetDirectoryName(filePath)!;
+
+
+            while (appendCount < 50)
             {
-                sw.Write(combinedTable.ConvertToCSVString(new StringBuilder()));
+                try
+                {
+                    string newFilePath = Path.Combine(dir, fileName + extension);
+
+                    if (appendCount == 0 || !File.Exists(newFilePath))
+                    {
+                        using (StreamWriter sw = File.CreateText(newFilePath))
+                        {
+                            sw.Write(content);
+                        }
+
+                        var p = new Process
+                        {
+                            StartInfo = new ProcessStartInfo(newFilePath)
+                            {
+                                UseShellExecute = true
+                            }
+                        };
+                        p.Start();
+                        return;
+                    }
+                }
+                catch (IOException)
+                {
+                }
+                finally
+                {
+                    fileName = Path.GetFileNameWithoutExtension(filePath) + appendCount++.ToString();
+                }
             }
-
-            var p = new Process();
-            p.StartInfo = new ProcessStartInfo(@cparams.savePath)
-            {
-                UseShellExecute = true
-            };
-            p.Start();
         }
 
 

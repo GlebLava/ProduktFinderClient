@@ -55,9 +55,6 @@ namespace ProduktFinderClient.Models
 
         public static async Task SearchWith(string keyword, ModuleType api, int numberOfResultsPerAPI, StatusHandle statusHandle, Action<List<Part>?> OnSearchFinishedCallback, CancellationToken cancellationToken)
         {
-            // DELETE LATER
-            ErrorLogger.LogError(new Exception(), "Bla bla bla this is an error yeah yeah hello" + api.ToString());
-
             var result = await SearchWith(keyword, api, numberOfResultsPerAPI, statusHandle, cancellationToken);
 
             if (!cancellationToken.IsCancellationRequested)
