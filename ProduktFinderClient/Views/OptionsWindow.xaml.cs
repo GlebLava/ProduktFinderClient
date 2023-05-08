@@ -3,6 +3,7 @@ using System;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Interop;
 
@@ -130,8 +131,29 @@ namespace ProduktFinderClient.Views
         #endregion
         private void NumberValidationTextBox(object sender, TextCompositionEventArgs e)
         {
-            Regex regex = new Regex("[^0-9]+");
-            e.Handled = regex.IsMatch(e.Text);
+            // Only allow numbers
+
+            Regex regex = new("^[0-9]*$");
+            e.Handled = !regex.IsMatch(e.Text); // e.Handled = true blocks e.Handled = false lets the input through
+        }
+
+        private void SearchResultsTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            TextBox textBox = (TextBox)sender;
+            string updatedText = textBox.Text;
+
+            updatedText = updatedText.TrimStart('0');
+            textBox.Text = updatedText;
+
+            if (updatedText == "")
+                return;
+
+
+            int parsed = int.Parse(updatedText);
+            if (parsed <= 0)
+                textBox.Text = "1";
+            else if (parsed > 50)
+                textBox.Text = "50";
         }
 
         public OptionsWindow()
@@ -160,6 +182,5 @@ namespace ProduktFinderClient.Views
                 e.Handled = true;
             }
         }
-
     }
 }

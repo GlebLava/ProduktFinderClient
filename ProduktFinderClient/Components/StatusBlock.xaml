@@ -17,9 +17,9 @@
             <Setter Property="VerticalAlignment" Value="Center"/>
             <Setter Property="Margin" Value="0,0,0,0"/>
             <Setter Property="FontSize" Value="{Binding RelativeSource={RelativeSource AncestorType=UserControl},Path=FontSize}"/>
-            <Setter Property="TextWrapping" Value="NoWrap"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Foreground" Value="{StaticResource FontColor}"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
         </Style>
         
     </UserControl.Resources>

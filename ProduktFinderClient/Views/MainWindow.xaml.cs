@@ -143,6 +143,20 @@ namespace ProduktFinderClient
             set => SetValue(DependencyPropertyInfoBoxHeight, value);
         }
 
+        public static readonly DependencyProperty DependencyPropertyInfoBoxWidth =
+    DependencyProperty.Register(
+        name: "InfoBoxWidth",
+        propertyType: typeof(double),
+        ownerType: typeof(MainWindow),
+        typeMetadata: new PropertyMetadata(default(double))
+        );
+
+        public double InfoBoxWidth
+        {
+            get => (double)GetValue(DependencyPropertyInfoBoxWidth);
+            set => SetValue(DependencyPropertyInfoBoxWidth, value);
+        }
+
         public static readonly DependencyProperty DependencyPropertyInfoBoxFontSize =
         DependencyProperty.Register(
         name: "InfoBoxFontSize",
@@ -172,6 +186,7 @@ namespace ProduktFinderClient
             FontSize = 20;
             InfoBoxFontSize = FontSize * 0.65;
             InfoBoxHeight = FontSize * 3;
+            InfoBoxWidth = FontSize * 20;
         }
 
         private void Window_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
@@ -196,8 +211,8 @@ namespace ProduktFinderClient
                         FontSize++;
 
                     InfoBoxHeight = FontSize * 3;
+                    InfoBoxWidth = FontSize * 20;
                     InfoBoxFontSize = FontSize * 0.65;
-
                 }
                 else
                 {

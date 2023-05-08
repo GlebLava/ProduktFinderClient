@@ -31,10 +31,13 @@ namespace ProduktFinderClient.Components
 
         public StatusHandle AddNewStatus()
         {
+
+            double width = this.ActualWidth / 2.0;
+
             StackPanel statusPanel = new() { Orientation = Orientation.Horizontal };
 
-            TextBox tLeft = new TextBox();
-            TextBox tRight = new TextBox();
+            TextBox tLeft = new TextBox() { MaxWidth = width };
+            TextBox tRight = new TextBox() { MaxWidth = width };
 
             statusPanel.Children.Add(tLeft);
             statusPanel.Children.Add(tRight);
