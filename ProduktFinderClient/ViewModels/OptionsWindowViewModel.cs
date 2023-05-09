@@ -1,5 +1,8 @@
 ﻿using ProduktFinderClient.DataTypes;
+using ProduktFinderClient.Models;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Windows.Documents;
 
 namespace ProduktFinderClient.ViewModels
 {
@@ -18,25 +21,26 @@ namespace ProduktFinderClient.ViewModels
             get { return attributes; }
         }
 
-        private readonly ObservableCollection<CheckableStringObject> filters;
-        public ObservableCollection<CheckableStringObject> Filters
+        private readonly ObservableCollection<CheckableStringObject> filtersDpd;
+        public ObservableCollection<CheckableStringObject> FiltersDpd
         {
-            get { return filters; }
+            get { return filtersDpd; }
         }
 
-        public OptionsWindowViewModel(ObservableCollection<string> attributesStrings, ObservableCollection<string> filterStrings)
+        public OptionsWindowViewModel(ObservableCollection<string> attributesStrings)
         {
             attributes = new ObservableCollection<CheckableStringObject>();
-            filters = new ObservableCollection<CheckableStringObject>();
+            filtersDpd = new ObservableCollection<CheckableStringObject>();
 
             for (int i = 0; i < attributesStrings.Count; i++)
             {
                 attributes.Add(new CheckableStringObject(OnPropertyChanged, nameof(Attributes)) { AttributeName = attributesStrings[i], IsChecked = true });
             }
 
-            for (int i = 0; i < filterStrings.Count; i++)
+            List<string> filterNames = Filters.GetFilterMethodStringTranslations();
+            foreach (string filterName in filterNames)
             {
-                filters.Add(new CheckableStringObject(OnPropertyChanged, nameof(Filters)) { AttributeName = filterStrings[i], IsChecked = false });
+                filtersDpd.Add(new CheckableStringObject(OnPropertyChanged, nameof(FiltersDpd)) { AttributeName = filterName, IsChecked = false });
             }
 
         }

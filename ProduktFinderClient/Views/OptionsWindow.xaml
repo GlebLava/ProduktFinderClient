@@ -110,7 +110,7 @@
                                    Margin="0,10,0,0"
                                    Style="{StaticResource OptionsHeaderTextblock}"/>
 
-                        <ListView  ItemsSource="{Binding Filters}"
+                        <ListView  ItemsSource="{Binding FiltersDpd}"
                                    Style="{StaticResource OptionsListView}">
                             <ListBox.ItemTemplate>
                                 <DataTemplate>

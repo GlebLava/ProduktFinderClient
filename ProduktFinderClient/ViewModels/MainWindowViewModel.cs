@@ -57,9 +57,11 @@ namespace ProduktFinderClient.ViewModels
         }
 
         private List<Part> rows;
+        private readonly OptionsWindowViewModel _optionsWindowViewModel;
         private StatusBlock statusBlock;
         public MainWindowViewModel(OptionsWindowViewModel optionsWindowViewModel, StatusBlock statusBlock)
         {
+            _optionsWindowViewModel = optionsWindowViewModel;
             this.statusBlock = statusBlock;
 
             // Init the observable colletion Lieferante from the Enum ModuleTypes and Filter from RequestHandler
@@ -114,6 +116,15 @@ namespace ProduktFinderClient.ViewModels
         {
             if (rows is null)
                 return;
+
+            foreach (var checkObj in _optionsWindowViewModel.FiltersDpd)
+            {
+                if (!checkObj.IsChecked)
+                    continue;
+
+                Filters.Filter(checkObj.AttributeName,ref rows);
+            }
+
 
             this.rows = rows;
 
