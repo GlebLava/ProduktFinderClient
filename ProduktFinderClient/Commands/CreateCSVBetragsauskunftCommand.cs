@@ -220,7 +220,7 @@ namespace ProduktFinderClient.Commands
                 string keyword = csv.GetField(i, cparams.h_ArtikelnummerIndex);
 
                 tasks.Add(ProcessRequest(moduleType, table, keyword, i, orderAmount, cancellationToken));
-                if (tasks.Count >= 5)
+                if (tasks.Count >= 3)
                 {
                     await Task.WhenAll(tasks);
                     tasks.Clear();

@@ -14,22 +14,22 @@
         <Style TargetType="TextBox">
             <Setter Property="IsReadOnly" Value="True"/>
             <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="VerticalAlignment" Value="Top"/>
             <Setter Property="Margin" Value="0,0,0,0"/>
             <Setter Property="FontSize" Value="{Binding RelativeSource={RelativeSource AncestorType=UserControl},Path=FontSize}"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Foreground" Value="{StaticResource FontColor}"/>
-            <Setter Property="TextWrapping" Value="Wrap"/>
+            <Setter Property="TextWrapping" Value="NoWrap"/>
         </Style>
         
     </UserControl.Resources>
 
     <ScrollViewer x:Name="MainScrollViewer"
                   Style="{DynamicResource DarkScrollViewerStyle}"
-                  Margin="0">
+                  Margin="0"
+                  HorizontalScrollBarVisibility="Visible">
         <StackPanel x:Name="MainStackPanel"
                     Background="{StaticResource BackGroundColor}"
-                    Width="Auto"
                     Orientation="Vertical">
         </StackPanel>
     </ScrollViewer>

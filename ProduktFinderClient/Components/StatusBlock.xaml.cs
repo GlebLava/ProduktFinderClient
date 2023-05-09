@@ -36,8 +36,8 @@ namespace ProduktFinderClient.Components
 
             StackPanel statusPanel = new() { Orientation = Orientation.Horizontal };
 
-            TextBox tLeft = new TextBox() { MaxWidth = width };
-            TextBox tRight = new TextBox() { MaxWidth = width };
+            TextBox tLeft = new TextBox();
+            TextBox tRight = new TextBox();
 
             statusPanel.Children.Add(tLeft);
             statusPanel.Children.Add(tRight);

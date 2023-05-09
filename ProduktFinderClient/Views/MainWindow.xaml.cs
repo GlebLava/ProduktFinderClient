@@ -185,7 +185,7 @@ namespace ProduktFinderClient
             CloseButton.Click += (s, e) => Close();
             FontSize = 20;
             InfoBoxFontSize = FontSize * 0.65;
-            InfoBoxHeight = FontSize * 3;
+            InfoBoxHeight = FontSize * 5;
             InfoBoxWidth = FontSize * 20;
         }
 
@@ -210,7 +210,7 @@ namespace ProduktFinderClient
                     else if (FontSize < 50)
                         FontSize++;
 
-                    InfoBoxHeight = FontSize * 3;
+                    InfoBoxHeight = FontSize * 5;
                     InfoBoxWidth = FontSize * 20;
                     InfoBoxFontSize = FontSize * 0.65;
                 }
