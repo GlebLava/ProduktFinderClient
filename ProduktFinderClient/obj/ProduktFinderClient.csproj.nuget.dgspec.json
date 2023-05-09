@@ -1,24 +1,24 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\glebg\\Desktop\\HCS\\ProduktFinderClient\\ProduktFinderClientSol\\ProduktFinderClient\\ProduktFinderClient.csproj": {}
+    "C:\\Users\\Infoonly\\Desktop\\HCS\\ProduktFinderClient\\ProduktFinderClient\\ProduktFinderClient\\ProduktFinderClient.csproj": {}
   },
   "projects": {
-    "C:\\Users\\glebg\\Desktop\\HCS\\ProduktFinderClient\\ProduktFinderClientSol\\ProduktFinderClient\\ProduktFinderClient.csproj": {
+    "C:\\Users\\Infoonly\\Desktop\\HCS\\ProduktFinderClient\\ProduktFinderClient\\ProduktFinderClient\\ProduktFinderClient.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\glebg\\Desktop\\HCS\\ProduktFinderClient\\ProduktFinderClientSol\\ProduktFinderClient\\ProduktFinderClient.csproj",
+        "projectUniqueName": "C:\\Users\\Infoonly\\Desktop\\HCS\\ProduktFinderClient\\ProduktFinderClient\\ProduktFinderClient\\ProduktFinderClient.csproj",
         "projectName": "ProduktFinderClient",
-        "projectPath": "C:\\Users\\glebg\\Desktop\\HCS\\ProduktFinderClient\\ProduktFinderClientSol\\ProduktFinderClient\\ProduktFinderClient.csproj",
-        "packagesPath": "C:\\Users\\glebg\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\glebg\\Desktop\\HCS\\ProduktFinderClient\\ProduktFinderClientSol\\ProduktFinderClient\\obj\\",
+        "projectPath": "C:\\Users\\Infoonly\\Desktop\\HCS\\ProduktFinderClient\\ProduktFinderClient\\ProduktFinderClient\\ProduktFinderClient.csproj",
+        "packagesPath": "C:\\Users\\Infoonly\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\Infoonly\\Desktop\\HCS\\ProduktFinderClient\\ProduktFinderClient\\ProduktFinderClient\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\glebg\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\Infoonly\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
-          "net6.0-windows7.0"
+          "net6.0-windows"
         ],
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
@@ -45,7 +45,8 @@
             "net47",
             "net471",
             "net472",
-            "net48"
+            "net48",
+            "net481"
           ],
           "assetTargetFallback": true,
           "warn": true,
@@ -57,7 +58,7 @@
               "privateAssets": "none"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.301\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.402\\RuntimeIdentifierGraph.json"
         }
       }
     }

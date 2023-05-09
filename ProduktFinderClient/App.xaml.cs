@@ -35,12 +35,7 @@ namespace ProduktFinderClient
 
 
             ObservableCollection<string> attributes = ColumnDefinitionsToOC(columnDefinitions);
-
-            ObservableCollection<string> filter =
-                new ObservableCollection<string> { "Keine Verfügbarkeit (noch nicht funktionsfähig)" };
-
-
-            OptionsWindowViewModel optionsWindowViewModel = new OptionsWindowViewModel(attributes, filter);
+            OptionsWindowViewModel optionsWindowViewModel = new OptionsWindowViewModel(attributes);
 
             mainWindow = new MainWindow();
             MainWindowViewModel mainWindowViewModel = new MainWindowViewModel(optionsWindowViewModel, mainWindow.MainStatusBlock);

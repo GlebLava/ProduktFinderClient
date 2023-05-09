@@ -4,17 +4,17 @@
 winexe
 C#
 .cs
-C:\Users\glebg\Desktop\HCS\ProduktFinderClient\ProduktFinderClientSol\ProduktFinderClient\obj\Debug\net6.0-windows\
+C:\Users\Infoonly\Desktop\HCS\ProduktFinderClient\ProduktFinderClient\ProduktFinderClient\obj\Debug\net6.0-windows\
 ProduktFinderClient
 none
 false
 TRACE;DEBUG;NET;NET6_0;NETCOREAPP
-C:\Users\glebg\Desktop\HCS\ProduktFinderClient\ProduktFinderClientSol\ProduktFinderClient\App.xaml
+C:\Users\Infoonly\Desktop\HCS\ProduktFinderClient\ProduktFinderClient\ProduktFinderClient\App.xaml
 10-691577339
 
-42947920222
-194-97651837
+43207283053
+194618410957
 Components\ColumnBasedGrid.xaml;Components\DropdownMenuStyle.xaml;Components\StatusBlock.xaml;Components\TextGrid.xaml;MyResources\DarkScrollViewer.xaml;MyResources\MainStyleResource.xaml;Themes\Generic.xaml;Views\CSVPreviewWindow.xaml;Views\MainWindow.xaml;Views\OptionsWindow.xaml;
 
-False
+True
 
