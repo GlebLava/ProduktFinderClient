@@ -13,11 +13,12 @@ namespace ProduktFinderClient.ViewModels
 {
     public class MainWindowViewModel : ViewModelBase
     {
+        #region dpds
 
         public ICommand SearchCommand { get; }
 
-        public string searchButtonContent;
-        public string SearchButtonContent
+        public string? searchButtonContent;
+        public string? SearchButtonContent
         {
             get { return searchButtonContent; }
             set { searchButtonContent = value; OnPropertyChanged(nameof(SearchButtonContent)); }
@@ -26,61 +27,57 @@ namespace ProduktFinderClient.ViewModels
         public ICommand OpenOptionsCommand { get; }
         public ICommand OpenCSVPreviewCommand { get; }
 
-        public string userUpdate;
-        public string UserUpdate
+        public string? userUpdate;
+        public string? UserUpdate
         {
             get { return userUpdate; }
             set { userUpdate = value; OnPropertyChanged(nameof(UserUpdate)); }
         }
 
 
-        private SpecifiedGridObservableCollection<AttributesInfo> specifiedGrid;
-        public SpecifiedGridObservableCollection<AttributesInfo> SpecifiedGrid
+        private SpecifiedGridObservableCollection<AttributesInfo>? specifiedGrid;
+        public SpecifiedGridObservableCollection<AttributesInfo>? SpecifiedGrid
         {
             get { return specifiedGrid; }
             set { specifiedGrid = value; OnPropertyChanged(nameof(SpecifiedGrid)); }
         }
 
-        private ObservableCollection<CheckableStringObject> lieferanten;
-        public ObservableCollection<CheckableStringObject> Lieferanten
+        private ObservableCollection<CheckableStringObject>? lieferanten;
+        public ObservableCollection<CheckableStringObject>? Lieferanten
         {
             get { return lieferanten; }
             set { lieferanten = value; OnPropertyChanged(nameof(Lieferanten)); }
         }
 
         //Needs to be set to a new object to trigger
-        private bool[] headersActive;
-        public bool[] HeadersActive
+        private bool[]? headersActive;
+        public bool[]? HeadersActive
         {
             get { return headersActive; }
             set { headersActive = value; OnPropertyChanged(nameof(HeadersActive)); }
         }
+
+        #endregion
 
         private readonly List<Part> _partsReceived;
         private List<Part> partsModified;
 
 
         private readonly OptionsWindowViewModel _optionsWindowViewModel;
-        private StatusBlock statusBlock;
+        private readonly StatusBlock _statusBlock;
+
         public MainWindowViewModel(OptionsWindowViewModel optionsWindowViewModel, StatusBlock statusBlock)
         {
             _partsReceived = new();
+            partsModified = new();
             _optionsWindowViewModel = optionsWindowViewModel;
-            this.statusBlock = statusBlock;
-
-            // Init the observable colletion Lieferante from the Enum ModuleTypes and Filter from RequestHandler
-            ObservableCollection<string> lieferantenTranslation = new ObservableCollection<string>();
-            foreach (ModuleType moduleType in Enum.GetValues(typeof(ModuleType)))
-            {
-                ModuleTranslations.ModulesTranslation.TryGetValue(moduleType, out string moduleString);
-                lieferantenTranslation.Add(moduleString);
-            }
-
-            Lieferanten = new ObservableCollection<CheckableStringObject>
-                (CheckableStringObject.StringCollectionToCheckableStringObject(lieferantenTranslation, OnPropertyChanged));
+            _statusBlock = statusBlock;
 
 
             InitLieferanten();
+
+
+
             SpecifiedGrid = new SpecifiedGridObservableCollection<AttributesInfo>(PartToView.columnDefinitions);
 
             SetHeadersActive(optionsWindowViewModel.Attributes);
@@ -91,7 +88,6 @@ namespace ProduktFinderClient.ViewModels
             SearchCommand = new SearchCommand("Suchen", "Abbrechen", s => SearchButtonContent = s, ClearGrid, OnSearchFinishedCallback, optionsWindowViewModel, this, GetNewStatusHandle);
             OpenCSVPreviewCommand = new OpenCSVPreviewCommand(this, GetNewStatusHandle);
             UserUpdate = "";
-            this.statusBlock = statusBlock;
         }
 
         private void OnGridSettingsChanged(object? sender, PropertyChangedEventArgs e)
@@ -99,7 +95,7 @@ namespace ProduktFinderClient.ViewModels
             OptionsWindowViewModel options = (sender as OptionsWindowViewModel)!;
 
 
-            if (e.PropertyName == "FiltersDpd")
+            if (e.PropertyName == "FiltersDpd" || e.PropertyName == "SortsDpd")
             {
                 ClearGrid();
                 VisualizeGrid(sender, _partsReceived);
@@ -113,7 +109,7 @@ namespace ProduktFinderClient.ViewModels
 
         private void ClearGrid()
         {
-            SpecifiedGrid.Clear();
+            SpecifiedGrid?.Clear();
         }
 
 
@@ -127,8 +123,6 @@ namespace ProduktFinderClient.ViewModels
         }
 
 
-        //   0          1           2               3               4           5            6
-        //ProduktBild Lieferant Hersteller Hersteller-TeileNr Beschreibung Lagerbestand Mengenpreise
         private void VisualizeGrid(object? sender, List<Part>? rows)
         {
             if (rows is null)
@@ -136,18 +130,10 @@ namespace ProduktFinderClient.ViewModels
 
             partsModified = new(rows);
 
-            foreach (var checkObj in _optionsWindowViewModel.FiltersDpd)
-            {
-                if (!checkObj.IsChecked)
-                    continue;
+            _optionsWindowViewModel.Filter(ref partsModified);
+            _optionsWindowViewModel.Sort(ref partsModified);
 
-                PartFilters.Filter(ref partsModified, checkObj.AttributeName);
-            }
-
-            foreach (Part part in partsModified)
-            {
-                SpecifiedGrid.AddPart(part);
-            }
+            SpecifiedGrid?.AddPartRange(partsModified);
         }
 
         private void SetHeadersActive(ObservableCollection<CheckableStringObject> newHeadersActive)
@@ -162,15 +148,26 @@ namespace ProduktFinderClient.ViewModels
 
         private void InitLieferanten()
         {
+            // Init the observable colletion Lieferante from the Enum ModuleTypes and Filter from RequestHandler
+            ObservableCollection<string> lieferantenTranslation = new ObservableCollection<string>();
+            foreach (ModuleType moduleType in Enum.GetValues(typeof(ModuleType)))
+            {
+                ModuleTranslations.ModulesTranslation.TryGetValue(moduleType, out string moduleString);
+                lieferantenTranslation.Add(moduleString);
+            }
+
+            Lieferanten = new ObservableCollection<CheckableStringObject>
+                (CheckableStringObject.StringCollectionToCheckableStringObject(lieferantenTranslation, OnPropertyChanged));
+
             foreach (CheckableStringObject lieferant in Lieferanten)
                 lieferant.IsChecked = true;
         }
 
         private StatusHandle GetNewStatusHandle()
         {
-            lock (statusBlock)
+            lock (_statusBlock)
             {
-                return statusBlock.AddNewStatus();
+                return _statusBlock.AddNewStatus();
             }
         }
 

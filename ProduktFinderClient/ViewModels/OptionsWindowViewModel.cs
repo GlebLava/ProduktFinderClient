@@ -27,10 +27,39 @@ namespace ProduktFinderClient.ViewModels
             get { return filtersDpd; }
         }
 
+        private readonly ObservableCollection<CheckableStringObject> sortsDpd;
+        public ObservableCollection<CheckableStringObject> SortsDpd
+        {
+            get { return sortsDpd; }
+        }
+
         public OptionsWindowViewModel()
         {
             attributes = PartToView.GetColumnNames().ToObservableCollection(OnPropertyChanged, nameof(Attributes), true);
             filtersDpd = PartFilters.GetFilterMethodStringTranslations().ToObservableCollection(OnPropertyChanged, nameof(FiltersDpd));
+            sortsDpd = PartSorts.GetSortMethodStringTranslations().ToObservableCollection(OnPropertyChanged, nameof(SortsDpd));
+        }
+
+        public void Filter(ref List<Part> parts)
+        {
+            foreach (var checkObj in FiltersDpd)
+            {
+                if (!checkObj.IsChecked)
+                    continue;
+
+                PartFilters.Filter(ref parts, checkObj.AttributeName);
+            }
+        }
+
+        public void Sort(ref List<Part> parts)
+        {
+            foreach (var checkObj in SortsDpd)
+            {
+                if (!checkObj.IsChecked)
+                    continue;
+
+                PartSorts.Sort(ref parts, checkObj.AttributeName);
+            }
         }
 
     }

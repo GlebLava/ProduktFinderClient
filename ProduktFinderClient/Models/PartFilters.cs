@@ -13,11 +13,19 @@ namespace ProduktFinderClient.Models
         static PartFilters()
         {
             _filterNameToFilterMethod = new();
-            _filterNameToFilterMethod["Verfügbar > 0"] = FilterAvailable;
+            _filterNameToFilterMethod["Mehr als 0 Verfügbar"] = FilterAvailable;
+        }
+        public static List<string> GetFilterMethodStringTranslations()
+        {
+            return _filterNameToFilterMethod.Keys.ToList();
         }
 
+        public static void Filter(ref List<Part> parts, string filterName, object? param = null)
+        {
+            _filterNameToFilterMethod[filterName](parts, param);
+        }
 
-        public static void FilterAvailable(List<Part> parts, object? param)
+        private static void FilterAvailable(List<Part> parts, object? param)
         {
             for (int i = parts.Count - 1; i >= 0; i--)
             {
@@ -28,15 +36,6 @@ namespace ProduktFinderClient.Models
             }
         }
 
-        public static List<string> GetFilterMethodStringTranslations()
-        {
-            return _filterNameToFilterMethod.Keys.ToList();
-        }
-
-        public static void Filter(ref List<Part> parts, string filterName, object? param = null)
-        {
-            _filterNameToFilterMethod[filterName](parts, param);
-        }
 
 
     }

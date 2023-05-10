@@ -31,10 +31,15 @@ public static class PartToView
         return columnNames;
     }
 
+    public static void AddPartRange(this SpecifiedGridObservableCollection<AttributesInfo> specifiedGrid, List<Part> parts)
+    {
+        foreach (Part part in parts)
+            AddPartToSpecifiedGrid(specifiedGrid, part);
+    }
+
     public static void AddPart(this SpecifiedGridObservableCollection<AttributesInfo> specifiedGrid, Part part)
     {
         AddPartToSpecifiedGrid(specifiedGrid, part);
-
     }
 
     public static void AddPartToSpecifiedGrid(SpecifiedGridObservableCollection<AttributesInfo> specifiedGrid, Part part)
