@@ -89,12 +89,12 @@ namespace ProduktFinderClient.Commands
             LoadSaveSystem.SaveMostUsedKeywordsModules();
 
             // Configure which Modules we want to search with
-            Filter filter = new Filter();
+            ModuleTranslations filter = new ModuleTranslations();
             foreach (var checkableString in mainWindowViewModel.Lieferanten)
             {
                 if (checkableString.IsChecked)
                 {
-                    Filter.ModulesTranslation.TryGetKey(checkableString.AttributeName, out ModuleType moduleType);
+                    ModuleTranslations.ModulesTranslation.TryGetKey(checkableString.AttributeName, out ModuleType moduleType);
                     filter.ModulesToSearchWith.Add(moduleType);
                 }
             }
@@ -105,7 +105,7 @@ namespace ProduktFinderClient.Commands
 
             foreach (ModuleType moduleType in filter.ModulesToSearchWith)
             {
-                Filter.ModulesTranslation.TryGetValue(moduleType, out string supplierName);
+                ModuleTranslations.ModulesTranslation.TryGetValue(moduleType, out string supplierName);
 
                 apiTables.Add(new ColumnedTable(new string[]
                 {

@@ -27,22 +27,10 @@ namespace ProduktFinderClient.ViewModels
             get { return filtersDpd; }
         }
 
-        public OptionsWindowViewModel(ObservableCollection<string> attributesStrings)
+        public OptionsWindowViewModel()
         {
-            attributes = new ObservableCollection<CheckableStringObject>();
-            filtersDpd = new ObservableCollection<CheckableStringObject>();
-
-            for (int i = 0; i < attributesStrings.Count; i++)
-            {
-                attributes.Add(new CheckableStringObject(OnPropertyChanged, nameof(Attributes)) { AttributeName = attributesStrings[i], IsChecked = true });
-            }
-
-            List<string> filterNames = Filters.GetFilterMethodStringTranslations();
-            foreach (string filterName in filterNames)
-            {
-                filtersDpd.Add(new CheckableStringObject(OnPropertyChanged, nameof(FiltersDpd)) { AttributeName = filterName, IsChecked = false });
-            }
-
+            attributes = PartToView.GetColumnNames().ToObservableCollection(OnPropertyChanged, nameof(Attributes), true);
+            filtersDpd = PartFilters.GetFilterMethodStringTranslations().ToObservableCollection(OnPropertyChanged, nameof(FiltersDpd));
         }
 
     }

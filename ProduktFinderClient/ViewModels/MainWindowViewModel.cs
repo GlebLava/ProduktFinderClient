@@ -56,35 +56,39 @@ namespace ProduktFinderClient.ViewModels
             set { headersActive = value; OnPropertyChanged(nameof(HeadersActive)); }
         }
 
-        private List<Part> rows;
+        private readonly List<Part> _partsReceived;
+        private List<Part> partsModified;
+
+
         private readonly OptionsWindowViewModel _optionsWindowViewModel;
         private StatusBlock statusBlock;
         public MainWindowViewModel(OptionsWindowViewModel optionsWindowViewModel, StatusBlock statusBlock)
         {
+            _partsReceived = new();
             _optionsWindowViewModel = optionsWindowViewModel;
             this.statusBlock = statusBlock;
 
             // Init the observable colletion Lieferante from the Enum ModuleTypes and Filter from RequestHandler
-            ObservableCollection<string> lieferanten = new ObservableCollection<string>();
+            ObservableCollection<string> lieferantenTranslation = new ObservableCollection<string>();
             foreach (ModuleType moduleType in Enum.GetValues(typeof(ModuleType)))
             {
-                Filter.ModulesTranslation.TryGetValue(moduleType, out string moduleString);
-                lieferanten.Add(moduleString);
+                ModuleTranslations.ModulesTranslation.TryGetValue(moduleType, out string moduleString);
+                lieferantenTranslation.Add(moduleString);
             }
 
             Lieferanten = new ObservableCollection<CheckableStringObject>
-                (CheckableStringObject.StringCollectionToCheckableStringObject(lieferanten, OnPropertyChanged));
+                (CheckableStringObject.StringCollectionToCheckableStringObject(lieferantenTranslation, OnPropertyChanged));
+
 
             InitLieferanten();
-
-            SpecifiedGrid = new SpecifiedGridObservableCollection<AttributesInfo>(App.columnDefinitions);
+            SpecifiedGrid = new SpecifiedGridObservableCollection<AttributesInfo>(PartToView.columnDefinitions);
 
             SetHeadersActive(optionsWindowViewModel.Attributes);
 
             optionsWindowViewModel.PropertyChanged += OnGridSettingsChanged;
 
             OpenOptionsCommand = new OpenOptionsCommand(optionsWindowViewModel);
-            SearchCommand = new SearchCommand("Suchen", "Abbrechen", s => SearchButtonContent = s, ClearGrid, VisualizeGrid, optionsWindowViewModel, this, GetNewStatusHandle);
+            SearchCommand = new SearchCommand("Suchen", "Abbrechen", s => SearchButtonContent = s, ClearGrid, OnSearchFinishedCallback, optionsWindowViewModel, this, GetNewStatusHandle);
             OpenCSVPreviewCommand = new OpenCSVPreviewCommand(this, GetNewStatusHandle);
             UserUpdate = "";
             this.statusBlock = statusBlock;
@@ -94,9 +98,11 @@ namespace ProduktFinderClient.ViewModels
         {
             OptionsWindowViewModel options = (sender as OptionsWindowViewModel)!;
 
-            if (e.PropertyName == "Filters")
+
+            if (e.PropertyName == "FiltersDpd")
             {
-                VisualizeGrid(sender, rows);
+                ClearGrid();
+                VisualizeGrid(sender, _partsReceived);
             }
             else if (e.PropertyName == "Attributes")
             {
@@ -110,6 +116,17 @@ namespace ProduktFinderClient.ViewModels
             SpecifiedGrid.Clear();
         }
 
+
+        private void OnSearchFinishedCallback(object? sender, List<Part>? rows)
+        {
+            if (rows is null)
+                return;
+
+            _partsReceived.AddRange(rows);
+            VisualizeGrid(this, _partsReceived);
+        }
+
+
         //   0          1           2               3               4           5            6
         //ProduktBild Lieferant Hersteller Hersteller-TeileNr Beschreibung Lagerbestand Mengenpreise
         private void VisualizeGrid(object? sender, List<Part>? rows)
@@ -117,55 +134,20 @@ namespace ProduktFinderClient.ViewModels
             if (rows is null)
                 return;
 
+            partsModified = new(rows);
+
             foreach (var checkObj in _optionsWindowViewModel.FiltersDpd)
             {
                 if (!checkObj.IsChecked)
                     continue;
 
-                Filters.Filter(checkObj.AttributeName,ref rows);
+                PartFilters.Filter(ref partsModified, checkObj.AttributeName);
             }
 
-
-            this.rows = rows;
-
-            for (int i = 0; i < rows.Count; i++)
+            foreach (Part part in partsModified)
             {
-                string[] newRow = new string[App.AMOUNT_OF_ATTRIBUTES];
-
-                newRow[0] = rows[i].ImageUrl;
-                newRow[1] = rows[i].Supplier;
-                newRow[2] = rows[i].Manufacturer;
-                newRow[3] = rows[i].ManufacturerPartNumber;
-                newRow[4] = rows[i].Description;
-                newRow[5] = (rows[i].AmountInStock is null || rows[i].AmountInStock == -1) ? "keine Angabe" : rows[i].AmountInStock.ToString();
-                newRow[6] = ConstructPrices(rows[i].Prices);
-
-                AttributesInfo attributesInfo = new AttributesInfo()
-                {
-                    hLink = rows[i].Hyperlink
-                };
-
-                SpecifiedGrid.AddRow(newRow, attributesInfo);
+                SpecifiedGrid.AddPart(part);
             }
-
-        }
-
-        private string ConstructPrices(List<Price> prices)
-        {
-            if (prices == null || prices.Count == 0)
-                return "keine Angabe";
-
-            string s = "";
-
-            foreach (Price price in prices)
-            {
-                if (price.FromAmount == -1 || price.PricePerPiece == -1.0f)
-                    continue;
-
-                s += "Ab " + price.FromAmount + " Stück " + price.PricePerPiece + " " + price.Currency + "\n";
-            }
-
-            return s;
         }
 
         private void SetHeadersActive(ObservableCollection<CheckableStringObject> newHeadersActive)

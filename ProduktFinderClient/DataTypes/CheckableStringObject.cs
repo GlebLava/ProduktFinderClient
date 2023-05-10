@@ -1,15 +1,32 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
 namespace ProduktFinderClient.DataTypes
 {
+    public static class CheckableStringObjectExtensions
+    {
+        public static ObservableCollection<CheckableStringObject> ToObservableCollection(this List<string> input, Action<string> OnPropertyChangedCallback, string OnPropertyChangedCallbackInput, bool isChecked = false)
+        {
+            ObservableCollection<CheckableStringObject> ret = new();
+
+            foreach (var s in input)
+            {
+                ret.Add(new CheckableStringObject(OnPropertyChangedCallback, OnPropertyChangedCallbackInput) { AttributeName = s, IsChecked = isChecked });
+            }
+
+            return ret;
+        }
+    }
+
+
     public class CheckableStringObject
     {
 
         private readonly Action<string> OnPropertyChangedCallBack;
-        private string callBackParam;
+        private string callBackParam = "";
 
-        public string AttributeName { get; set; }
+        public string AttributeName { get; set; } = "";
 
         private bool isChecked;
         public bool IsChecked
@@ -36,16 +53,17 @@ namespace ProduktFinderClient.DataTypes
             this.callBackParam = callBackParam;
         }
 
-        public static Collection<CheckableStringObject> StringCollectionToCheckableStringObject(Collection<string> collection, Action<string> OnPropertyChangedCallBack)
-        {
-            if (collection == null)
-                return null;
 
-            Collection<CheckableStringObject> newColl = new Collection<CheckableStringObject>();
+        public static Collection<CheckableStringObject> StringCollectionToCheckableStringObject(Collection<string> collection, Action<string> OnPropertyChangedCallBack, bool isCheckedInit = false)
+        {
+            Collection<CheckableStringObject> newColl = new();
+
+            if (collection == null)
+                return newColl;
 
             for (int i = 0; i < collection.Count; i++)
             {
-                newColl.Add(new CheckableStringObject(OnPropertyChangedCallBack) { AttributeName = collection[i], isChecked = false });
+                newColl.Add(new CheckableStringObject(OnPropertyChangedCallBack) { AttributeName = collection[i], isChecked = isCheckedInit });
             }
 
             return newColl;

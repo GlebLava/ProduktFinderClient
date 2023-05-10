@@ -22,17 +22,15 @@ namespace ProduktFinderClient.Models
         DIGI_KEY = 6,
     }
 
-    public class Filter
+    public class ModuleTranslations
     {
         public HashSet<ModuleType> ModulesToSearchWith { get; set; } = new HashSet<ModuleType>();
 
         [NonSerialized]
         public static readonly BidirectionalDictionary<ModuleType, string> ModulesTranslation;
 
-
-
         // Just so we can init ModulesTranslation
-        static Filter()
+        static ModuleTranslations()
         {
             ModulesTranslation = new BidirectionalDictionary<ModuleType, string>();
             ModulesTranslation.Add(ModuleType.MOUSER, "Mouser");
@@ -43,6 +41,19 @@ namespace ProduktFinderClient.Models
             ModulesTranslation.Add(ModuleType.REICHELT, "Reichelt");
             ModulesTranslation.Add(ModuleType.DIGI_KEY, "DigiKey");
         }
+
+        public static List<string> GetModuleNamesList()
+        {
+            List<string> list = new();
+            foreach (ModuleType moduleType in Enum.GetValues(typeof(ModuleType)))
+            {
+                ModulesTranslation.TryGetValue(moduleType, out string moduleString);
+                list.Add(moduleString);
+            }
+
+            return list;
+        }
+
     }
 
     public class RequestHandler
@@ -69,7 +80,7 @@ namespace ProduktFinderClient.Models
                 keyword = FilterKeyWord(keyword);
 
                 // UPDATE USER
-                Filter.ModulesTranslation.TryGetValue(api, out string moduleName);
+                ModuleTranslations.ModulesTranslation.TryGetValue(api, out string moduleName);
                 DateTime currentTime = DateTime.Now;
                 string formattedTime = currentTime.ToString("HH:mm");
                 statusHandle.TextLeft = $"<{formattedTime}> {moduleName} \"{keyword}\" ";

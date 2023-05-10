@@ -19,23 +19,9 @@ namespace ProduktFinderClient
     {
         public static MainWindow mainWindow;
 
-        public static readonly ColumnTypeDefinition[] columnDefinitions = {
-            new ColumnTypeDefinition("Produkt Bild", ColumnType.Image),
-            new ColumnTypeDefinition("Lieferant", ColumnType.Hyperlink),
-            new ColumnTypeDefinition("Hersteller", ColumnType.Text),
-            new ColumnTypeDefinition("Hersteller-TeileNr.", ColumnType.Text),
-            new ColumnTypeDefinition("Beschreibung", ColumnType.Text),
-            new ColumnTypeDefinition("Verfügbarkeit", ColumnType.Text),
-            new ColumnTypeDefinition("Mengenpreise", ColumnType.Text) };
-        public static int AMOUNT_OF_ATTRIBUTES = columnDefinitions.Length;
-
-
         protected override void OnStartup(StartupEventArgs e)
         {
-
-
-            ObservableCollection<string> attributes = ColumnDefinitionsToOC(columnDefinitions);
-            OptionsWindowViewModel optionsWindowViewModel = new OptionsWindowViewModel(attributes);
+            OptionsWindowViewModel optionsWindowViewModel = new OptionsWindowViewModel();
 
             mainWindow = new MainWindow();
             MainWindowViewModel mainWindowViewModel = new MainWindowViewModel(optionsWindowViewModel, mainWindow.MainStatusBlock);

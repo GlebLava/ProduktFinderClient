@@ -60,7 +60,7 @@ namespace ProduktFinderClient.Commands
                     {
                         StatusHandle statusHandle = UserUpdateStatusHandleCreate();
 
-                        Filter.ModulesTranslation.TryGetKey(checkableString.AttributeName, out ModuleType moduleType);
+                        ModuleTranslations.ModulesTranslation.TryGetKey(checkableString.AttributeName, out ModuleType moduleType);
                         tasks.Add(RequestHandler.SearchWith(keyword, moduleType, numberSearchResults,
                             statusHandle, (x) => SearchFinishedCallBack(mainWindowViewModel, x), cancalationToken));
                     }
