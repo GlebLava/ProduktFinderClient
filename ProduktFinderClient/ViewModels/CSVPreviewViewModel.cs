@@ -104,6 +104,13 @@ namespace ProduktFinderClient.ViewModels
             set { buttonContent = value; OnPropertyChanged(nameof(ButtonContent)); }
         }
 
+        private bool excelOutput;
+        public bool ExcelOutput
+        {
+            get { return excelOutput; }
+            set { excelOutput = value; OnPropertyChanged(nameof(ExcelOutput)); }
+        }
+
         #endregion
 
         CSVObject csv;
@@ -113,6 +120,7 @@ namespace ProduktFinderClient.ViewModels
             Bedarf = new ObservableCollection<StringWithCommand>();
             H_Artikelnummer = new ObservableCollection<StringWithCommand>();
             HCS_Artikelnummer = new ObservableCollection<StringWithCommand>();
+            ExcelOutput = true;
 
             for (int i = 0; i < csvin.headers.Length; i++)
             {
@@ -150,8 +158,8 @@ namespace ProduktFinderClient.ViewModels
                 mainWindowViewModel, csvin, UserUpdateStatusHandleCreate, TransformString, CommandParams);
 
             OnChangePreviewGrid();
-        }
 
+        }
         /// <summary>
         /// For easy of use, whitespaces, '_', '-', are stripped and not case sensitive
         /// </summary>
@@ -177,7 +185,7 @@ namespace ProduktFinderClient.ViewModels
 
         private CreateCSVBetragsauskunftCommand.CommandParams CommandParams()
         {
-            return new CreateCSVBetragsauskunftCommand.CommandParams(SavePath, BedarfTitel, bedarfIndex, H_ArtikelnummerTitel, h_ArtikelnummerIndex, HCS_ArtikelnummerTitel, hcs_ArtikelnummerIndex);
+            return new CreateCSVBetragsauskunftCommand.CommandParams(SavePath, BedarfTitel, bedarfIndex, H_ArtikelnummerTitel, h_ArtikelnummerIndex, HCS_ArtikelnummerTitel, hcs_ArtikelnummerIndex, ExcelOutput);
         }
 
         private void OnChangePreviewGrid()

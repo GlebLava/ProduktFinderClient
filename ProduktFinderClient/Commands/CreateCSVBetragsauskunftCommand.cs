@@ -33,8 +33,9 @@ namespace ProduktFinderClient.Commands
             public int h_ArtikelnummerIndex;
             public string hcs_ArtikelnummerTitel;
             public int hcs_ArtikelnummerIndex;
+            public bool useExcelOutput;
 
-            public CommandParams(string savePath, string bedarfTitel, int bedarfIndex, string h_ArtikelnummerTitel, int h_ArtikelnummerIndex, string hcs_ArtikelnummerTitel, int hcs_ArtikelnummerIndex)
+            public CommandParams(string savePath, string bedarfTitel, int bedarfIndex, string h_ArtikelnummerTitel, int h_ArtikelnummerIndex, string hcs_ArtikelnummerTitel, int hcs_ArtikelnummerIndex, bool useExcelOutput)
             {
                 this.savePath = savePath;
                 this.bedarfTitel = bedarfTitel;
@@ -43,6 +44,7 @@ namespace ProduktFinderClient.Commands
                 this.h_ArtikelnummerIndex = h_ArtikelnummerIndex;
                 this.hcs_ArtikelnummerTitel = hcs_ArtikelnummerTitel;
                 this.hcs_ArtikelnummerIndex = hcs_ArtikelnummerIndex;
+                this.useExcelOutput = useExcelOutput;
             }
         }
 
@@ -146,7 +148,18 @@ namespace ProduktFinderClient.Commands
             apiTables.Insert(0, mainTable);
             ColumnedTable combinedTable = ColumnedTable.Combine(apiTables.ToArray());
 
-            WriteAndOpenCSVFileWithRenameIfFileIsInUse(cparams.savePath, combinedTable.ConvertToCSVString(new StringBuilder()));
+            string filePath = cparams.savePath;
+            if (cparams.useExcelOutput)
+            {
+                filePath = Path.ChangeExtension(filePath, "xlsx");
+                WriteAndOpenExcelFileWithRenameIfFileIsInUse(filePath, combinedTable);
+            }
+            else
+            {
+                filePath = Path.ChangeExtension(filePath, "csv");
+                WriteAndOpenCSVFileWithRenameIfFileIsInUse(filePath, combinedTable.ConvertToCSVString(new StringBuilder()));
+            }
+
         }
 
 
@@ -159,7 +172,6 @@ namespace ProduktFinderClient.Commands
         /// <param name="content">What to write into the file</param>
         private void WriteAndOpenCSVFileWithRenameIfFileIsInUse(string filePath, string content)
         {
-
             int appendCount = 0;
             string fileName = Path.GetFileNameWithoutExtension(filePath);
             string extension = Path.GetExtension(filePath);
@@ -200,7 +212,25 @@ namespace ProduktFinderClient.Commands
             }
         }
 
+        private void WriteAndOpenExcelFileWithRenameIfFileIsInUse(string filePath, ColumnedTable table)
+        {
+            // TODO BAQIR MACH DES
 
+
+            File.WriteAllText(filePath, ""); // DAS NUR FÜR DEMO, KANNST ENTFERNEN
+
+
+
+
+
+
+            // ÖFFNET EXCEL FILE, AM PFAD filePath
+            ProcessStartInfo startInfo = new(filePath);
+            startInfo.UseShellExecute = true;
+            Process process = new();
+            process.StartInfo = startInfo;
+            process.Start();
+        }
 
         private int ExtractIntFromOrderAmount(string orderAmount)
         {

@@ -180,6 +180,18 @@
                         <ContentControl Content="Ort suchen"
                                         Margin="5"/>
                     </Button>
+
+                    <Label Content="Als Excel ausgeben"
+                           Foreground="{StaticResource ToolbarForeGroundColor}"
+                           VerticalAlignment="Center"
+                           Margin="20,0,0,0"/>
+
+                    <CheckBox VerticalAlignment="Center"
+                              IsChecked="{Binding ExcelOutput}">
+                        
+                    </CheckBox>
+                    
+                    
                 </StackPanel>
 
 
