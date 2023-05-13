@@ -157,17 +157,9 @@
                     BorderBrush="{StaticResource ToolbarForeGroundColor}"
                     Background="{StaticResource AllBackGroundColor}">
 
-                <components:ColumnBasedGrid x:Name="MainColumnBasedGrid"
-           
-                                            SpecifiedGrid="{Binding SpecifiedGrid, Mode=TwoWay,
-                                                UpdateSourceTrigger=PropertyChanged}"
-                                        
-                                            ColumnsVisible="{Binding HeadersActive, Mode=TwoWay,
-                                                UpdateSourceTrigger=PropertyChanged}"
-                                        
+                <components:PartsGrid x:Name="MainPartsGrid"
                                             FontSize="20"
                                             Margin="10"/>
-
             </Border>
 
         </DockPanel>

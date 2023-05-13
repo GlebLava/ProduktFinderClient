@@ -1,4 +1,5 @@
 ﻿using ProduktFinderClient.Commands;
+using ProduktFinderClient.Components;
 using ProduktFinderClient.DataTypes;
 using ProduktFinderClient.Models;
 using System;
@@ -66,7 +67,7 @@ public class OptionsWindowViewModel : ViewModelBase
 
     public OptionsWindowViewModel()
     {
-        attributes = PartToView.GetColumnNames().ToObservableCollection(OnPropertyChanged, nameof(Attributes), true);
+        attributes = PartsGrid.COLUMN_TITLES.ToObservableCollection(OnPropertyChanged, nameof(Attributes), true);
         sortsDpd = PartSorts.GetSortMethodStringTranslations().ToObservableCollection(OnPropertyChanged, nameof(SortsDpd));
 
 
