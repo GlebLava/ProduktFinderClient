@@ -194,9 +194,9 @@ namespace ProduktFinderClient
             if (Keyboard.IsKeyDown(Key.LeftShift))
             {
                 if (e.Delta < 0)
-                    MainColumnBasedGrid.GridScrollViewer.LineLeft();
+                    MainPartsGrid.GridScrollViewer.LineLeft();
                 else
-                    MainColumnBasedGrid.GridScrollViewer.LineRight();
+                    MainPartsGrid.GridScrollViewer.LineRight();
 
                 e.Handled = true;
             }
@@ -216,10 +216,10 @@ namespace ProduktFinderClient
                 }
                 else
                 {
-                    if (e.Delta < 0 && MainColumnBasedGrid.FontSize > 2)
-                        MainColumnBasedGrid.FontSize--;
-                    else if (MainColumnBasedGrid.FontSize < 50)
-                        MainColumnBasedGrid.FontSize++;
+                    if (e.Delta < 0 && MainPartsGrid.FontSize > 2)
+                        MainPartsGrid.FontSize--;
+                    else if (MainPartsGrid.FontSize < 50)
+                        MainPartsGrid.FontSize++;
                 }
 
                 e.Handled = true;

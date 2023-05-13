@@ -35,26 +35,11 @@ namespace ProduktFinderClient.ViewModels
         }
 
 
-        private SpecifiedGridObservableCollection<AttributesInfo>? specifiedGrid;
-        public SpecifiedGridObservableCollection<AttributesInfo>? SpecifiedGrid
-        {
-            get { return specifiedGrid; }
-            set { specifiedGrid = value; OnPropertyChanged(nameof(SpecifiedGrid)); }
-        }
-
         private ObservableCollection<CheckableStringObject>? lieferanten;
         public ObservableCollection<CheckableStringObject>? Lieferanten
         {
             get { return lieferanten; }
             set { lieferanten = value; OnPropertyChanged(nameof(Lieferanten)); }
-        }
-
-        //Needs to be set to a new object to trigger
-        private bool[]? headersActive;
-        public bool[]? HeadersActive
-        {
-            get { return headersActive; }
-            set { headersActive = value; OnPropertyChanged(nameof(HeadersActive)); }
         }
 
         #endregion
@@ -65,22 +50,19 @@ namespace ProduktFinderClient.ViewModels
 
         private readonly OptionsWindowViewModel _optionsWindowViewModel;
         private readonly StatusBlock _statusBlock;
+        private readonly PartsGrid _partsGrid;
 
-        public MainWindowViewModel(OptionsWindowViewModel optionsWindowViewModel, StatusBlock statusBlock)
+        public MainWindowViewModel(OptionsWindowViewModel optionsWindowViewModel, PartsGrid partsGrid, StatusBlock statusBlock)
         {
             _partsReceived = new();
             partsModified = new();
             _optionsWindowViewModel = optionsWindowViewModel;
             _statusBlock = statusBlock;
+            _partsGrid = partsGrid;
 
 
             InitLieferanten();
 
-
-
-            SpecifiedGrid = new SpecifiedGridObservableCollection<AttributesInfo>(PartToView.columnDefinitions);
-
-            SetHeadersActive();
             optionsWindowViewModel.ApplyEvent += OnGridSettingsChanged;
 
             OpenOptionsCommand = new OpenOptionsCommand(optionsWindowViewModel);
@@ -91,15 +73,20 @@ namespace ProduktFinderClient.ViewModels
 
         private void OnGridSettingsChanged(object? sender, EventArgs e)
         {
-            ClearGrid();
             SetHeadersActive();
-            VisualizeGrid(sender, _partsReceived);
+
+            partsModified = new(_partsReceived);
+            _optionsWindowViewModel.Filter(ref partsModified);
+            _optionsWindowViewModel.Sort(ref partsModified);
+
+            ClearGrid();
+            _partsGrid.AddPartRange(partsModified);
         }
 
 
         private void ClearGrid()
         {
-            SpecifiedGrid?.Clear();
+            _partsGrid.Clear();
         }
 
 
@@ -109,24 +96,7 @@ namespace ProduktFinderClient.ViewModels
                 return;
 
             _partsReceived.AddRange(rows);
-            VisualizeGrid(this, _partsReceived);
-        }
-
-
-        private void VisualizeGrid(object? sender, List<Part>? rows)
-        {
-            if (rows is null)
-                return;
-
-
-            partsModified = new(_partsReceived);
-
-            _optionsWindowViewModel.Filter(ref partsModified);
-            _optionsWindowViewModel.Sort(ref partsModified);
-
-            ClearGrid();
-            SpecifiedGrid?.AddPartRange(partsModified);
-
+            _partsGrid.AddPartRange(rows);
         }
 
         private void SetHeadersActive()
@@ -138,7 +108,7 @@ namespace ProduktFinderClient.ViewModels
             {
                 arr[i] = newHeadersActive[i].IsChecked;
             }
-            HeadersActive = arr;
+            _partsGrid.ChangeColumnsVisibility(arr);
         }
 
         private void InitLieferanten()
