@@ -8,35 +8,40 @@ namespace ProduktFinderClient.Models
 {
     public class PartFilters
     {
-        private static readonly Dictionary<string, Action<List<Part>, object?>> _filterNameToFilterMethod;
-
-        static PartFilters()
+        public static void FilterAvailableLessThen(List<Part> parts, int lessThenAmount)
         {
-            _filterNameToFilterMethod = new();
-            _filterNameToFilterMethod["Mehr als 0 Verfügbar"] = FilterAvailable;
-        }
-        public static List<string> GetFilterMethodStringTranslations()
-        {
-            return _filterNameToFilterMethod.Keys.ToList();
+            Filter((p) => p.AmountInStock <= lessThenAmount, parts);
         }
 
-        public static void Filter(ref List<Part> parts, string filterName, object? param = null)
+        public static void FilterAvailableMoreThen(List<Part> parts, int moreThenAmount)
         {
-            _filterNameToFilterMethod[filterName](parts, param);
+            Filter((p) => p.AmountInStock >= moreThenAmount, parts);
         }
 
-        private static void FilterAvailable(List<Part> parts, object? param)
+        public static void FilterLessThenPriceAt(List<Part> parts, float price, int at)
+        {
+            Filter((p) =>
+            {
+                var priceEntry = p.Prices.Find(price => price.FromAmount >= at);
+                if (priceEntry != null)
+                {
+                    if (priceEntry.PricePerPiece <= price)
+                        return true;
+                }
+                return false;
+            }, parts);
+        }
+
+        private static void Filter(Func<Part, bool> predicate, List<Part> parts)
         {
             for (int i = parts.Count - 1; i >= 0; i--)
             {
-                if (parts[i].AmountInStock <= 0)
+                if (!predicate(parts[i]))
                 {
                     parts.RemoveAt(i);
                 }
             }
         }
-
-
 
     }
 }
