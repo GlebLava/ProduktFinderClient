@@ -112,20 +112,21 @@ namespace ProduktFinderClient.ViewModels
             VisualizeGrid(this, _partsReceived);
         }
 
-        /// <summary>
-        /// This does not clear the Grid! Only adds rows to it!
-        /// </summary>
+
         private void VisualizeGrid(object? sender, List<Part>? rows)
         {
             if (rows is null)
                 return;
 
-            partsModified = new(rows);
+
+            partsModified = new(_partsReceived);
 
             _optionsWindowViewModel.Filter(ref partsModified);
             _optionsWindowViewModel.Sort(ref partsModified);
 
+            ClearGrid();
             SpecifiedGrid?.AddPartRange(partsModified);
+
         }
 
         private void SetHeadersActive()
