@@ -80,9 +80,8 @@ namespace ProduktFinderClient.ViewModels
 
             SpecifiedGrid = new SpecifiedGridObservableCollection<AttributesInfo>(PartToView.columnDefinitions);
 
-            SetHeadersActive(optionsWindowViewModel.Attributes);
-
-            optionsWindowViewModel.PropertyChanged += OnGridSettingsChanged;
+            SetHeadersActive();
+            optionsWindowViewModel.ApplyEvent += OnGridSettingsChanged;
 
             OpenOptionsCommand = new OpenOptionsCommand(optionsWindowViewModel);
             SearchCommand = new SearchCommand("Suchen", "Abbrechen", s => SearchButtonContent = s, ClearGrid, OnSearchFinishedCallback, optionsWindowViewModel, this, GetNewStatusHandle);
@@ -90,20 +89,11 @@ namespace ProduktFinderClient.ViewModels
             UserUpdate = "";
         }
 
-        private void OnGridSettingsChanged(object? sender, PropertyChangedEventArgs e)
+        private void OnGridSettingsChanged(object? sender, EventArgs e)
         {
-            OptionsWindowViewModel options = (sender as OptionsWindowViewModel)!;
-
-
-            if (e.PropertyName == "FiltersDpd" || e.PropertyName == "SortsDpd")
-            {
-                ClearGrid();
-                VisualizeGrid(sender, _partsReceived);
-            }
-            else if (e.PropertyName == "Attributes")
-            {
-                SetHeadersActive(options.Attributes);
-            }
+            ClearGrid();
+            SetHeadersActive();
+            VisualizeGrid(sender, _partsReceived);
         }
 
 
@@ -128,16 +118,21 @@ namespace ProduktFinderClient.ViewModels
             if (rows is null)
                 return;
 
-            partsModified = new(rows);
+
+            partsModified = new(_partsReceived);
 
             _optionsWindowViewModel.Filter(ref partsModified);
             _optionsWindowViewModel.Sort(ref partsModified);
 
+            ClearGrid();
             SpecifiedGrid?.AddPartRange(partsModified);
+
         }
 
-        private void SetHeadersActive(ObservableCollection<CheckableStringObject> newHeadersActive)
+        private void SetHeadersActive()
         {
+            ObservableCollection<CheckableStringObject> newHeadersActive = _optionsWindowViewModel.Attributes;
+
             bool[] arr = new bool[newHeadersActive.Count];
             for (int i = 0; i < newHeadersActive.Count; i++)
             {

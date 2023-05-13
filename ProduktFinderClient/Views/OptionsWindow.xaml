@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:ProduktFinderClient.Views"
         xmlns:viewModels="clr-namespace:ProduktFinderClient.ViewModels"
         mc:Ignorable="d"
-        Title="OptionsWindow" Height="500" Width="450"
+        Title="OptionsWindow" Height="600" Width="550"
         x:Name="Options"
         WindowStyle="None"
         AllowsTransparency="True"
@@ -54,52 +54,57 @@
             <!-- END ChromeWindow -->
 
 
+            <Grid  Background="{StaticResource ChildwindowBackGroundColor}"
+                   DockPanel.Dock="Top">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="15*"/>
+                    <ColumnDefinition Width="203*"/>
+                    <ColumnDefinition Width="15*"/>
+                </Grid.ColumnDefinitions>
 
-            <ScrollViewer ScrollViewer.CanContentScroll="True"
-                          ScrollViewer.VerticalScrollBarVisibility="Auto"
-                          Style="{DynamicResource DarkScrollViewerStyle}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="9*"/>
+                    <RowDefinition Height="1*"/>
+                </Grid.RowDefinitions>
 
-                <Grid  Background="{StaticResource ChildwindowBackGroundColor}">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="11*"/>
-                        <ColumnDefinition Width="203*"/>
-                        <ColumnDefinition Width="11*"/>
-                    </Grid.ColumnDefinitions>
-
-
-
-                    <StackPanel Grid.Column="1">
+                <ScrollViewer ScrollViewer.CanContentScroll="True"
+                              ScrollViewer.VerticalScrollBarVisibility="Auto"
+                              Style="{DynamicResource DarkScrollViewerStyle}"
+                              Grid.Row="0"
+                              Grid.Column="1"
+                              HorizontalScrollBarVisibility="Auto">
+                    <StackPanel Margin="20">
                         <StackPanel Orientation="Horizontal"
-                            VerticalAlignment="Center"
-                            Margin="0,10,0,20">
+                                VerticalAlignment="Center"
+                                Margin="0,10,0,20">
 
                             <TextBlock Text="Search Results Per Site (1 - 50):"
-                                           Style="{StaticResource OptionsHeaderTextblock}"/>
+                                               Style="{StaticResource OptionsHeaderTextblock}"/>
 
 
                             <TextBox Text="{Binding ResultsInSearchPerAPI}"
-                                     Margin="5,0,0,0"
-                                     MinWidth="50"
-                                     TextAlignment="Center"
-                                     Name="SearchResultsTextBox"
-                                     PreviewTextInput="NumberValidationTextBox"
-                                     TextChanged="SearchResultsTextBox_TextChanged"
-                                     MaxLength="10"
-                                     Padding="5"
-                                     Style="{StaticResource ToolbarTextBox}"/>
+                                         Margin="5,0,0,0"
+                                         MinWidth="50"
+                                         TextAlignment="Center"
+                                         Name="SearchResultsTextBox"
+                                         PreviewTextInput="IntValidationTextBox"
+                                         TextChanged="SearchResultsTextBox_TextChanged"
+                                         MaxLength="10"
+                                         Padding="5"
+                                         Style="{StaticResource ToolbarTextBox}"/>
                         </StackPanel>
 
 
                         <TextBlock Text="Anzeigen:"
-                           Style="{StaticResource OptionsHeaderTextblock}"/>
+                               Style="{StaticResource OptionsHeaderTextblock}"/>
 
                         <ListView  ItemsSource="{Binding Attributes}"
-                                   Style="{StaticResource OptionsListView}">
+                                       Style="{StaticResource OptionsListView}">
                             <ListBox.ItemTemplate>
                                 <DataTemplate>
                                     <CheckBox Content="{Binding Path=AttributeName}"
-                                      IsChecked="{Binding Path=IsChecked}"
-                                      Style="{StaticResource ToolBarCheckBox}"/>
+                                          IsChecked="{Binding Path=IsChecked}"
+                                          Style="{StaticResource ToolBarCheckBox}"/>
                                 </DataTemplate>
                             </ListBox.ItemTemplate>
                         </ListView>
@@ -107,43 +112,69 @@
 
 
                         <TextBlock Text="Filtern:"
-                                   Margin="0,10,0,0"
-                                   Style="{StaticResource OptionsHeaderTextblock}"/>
+                                       Margin="0,10,0,0"
+                                       Style="{StaticResource OptionsHeaderTextblock}"/>
 
-                        <ListView  ItemsSource="{Binding FiltersDpd}"
-                                   Style="{StaticResource OptionsListView}">
-                            <ListBox.ItemTemplate>
-                                <DataTemplate>
-                                    <CheckBox Content="{Binding Path=AttributeName}"
-                                        IsChecked="{Binding Path=IsChecked}"
-                                      Style="{StaticResource ToolBarCheckBox}"/>
-                                </DataTemplate>
-                            </ListBox.ItemTemplate>
-                        </ListView>
+                        <StackPanel Orientation="Vertical">
+
+                            <Border>
+                                <StackPanel Orientation="Horizontal" Margin="5">
+                                    <CheckBox Content="Verfügbarkeit größer als:" Style="{StaticResource ToolBarCheckBox}" IsChecked="{Binding FilterAvailabilityMoreThen.IsChecked}"/>
+                                    <TextBox Text="{Binding FilterAvailabilityMoreThen.AttributeName}" Style="{StaticResource ToolbarTextBox}" PreviewTextInput="IntValidationTextBox" TextChanged="IntResultTextBox_TextChanged"/>
+                                </StackPanel>
+                            </Border>
+                            <Border Margin="0,5,0,0">
+                                <StackPanel Orientation="Horizontal" Margin="5">
+                                    <CheckBox Content="Verfügbarkeit kleiner als:" Style="{StaticResource ToolBarCheckBox}" IsChecked="{Binding FilterAvailabilityLessThen.IsChecked}"/>
+                                    <TextBox Text="{Binding FilterAvailabilityLessThen.AttributeName}" Style="{StaticResource ToolbarTextBox}" PreviewTextInput="IntValidationTextBox" TextChanged="IntResultTextBox_TextChanged"/>
+                                </StackPanel>
+                            </Border>
+                            <Border Margin="0,5,0,0">
+                                <StackPanel Orientation="Horizontal" Margin="5">
+                                    <CheckBox Content="Preis bei Menge:" Style="{StaticResource ToolBarCheckBox}" IsChecked="{Binding FilterPriceLessThenAt.IsChecked}"/>
+                                    <TextBox Text="{Binding PriceLessThenAtAmount}" Style="{StaticResource ToolbarTextBox}" PreviewTextInput="IntValidationTextBox" TextChanged="IntResultTextBox_TextChanged"/>
+                                    <Label Content="weniger als" Style="{StaticResource DefaultLabel}"/>
+                                    <TextBox Text="{Binding FilterPriceLessThenAt.AttributeName}" Style="{StaticResource ToolbarTextBox}" PreviewTextInput="FloatValidationTextBox" TextChanged="FloatResultTextBox_TextChanged"/>
+                                    <Label Content="EUR" Style="{StaticResource DefaultLabel}"/>
+                                </StackPanel>
+                            </Border>
+
+
+
+                        </StackPanel>
 
                         <TextBlock Text="Sortieren:"
-                                   Margin="0,10,0,0"
-                                   Style="{StaticResource OptionsHeaderTextblock}"/>
+                                       Margin="0,10,0,0"
+                                       Style="{StaticResource OptionsHeaderTextblock}"/>
 
                         <ListView  ItemsSource="{Binding SortsDpd}"
-                                   Style="{StaticResource OptionsListView}">
+                                       Style="{StaticResource OptionsListView}">
                             <ListBox.ItemTemplate>
                                 <DataTemplate>
-                                    <CheckBox Content="{Binding Path=AttributeName}"
-                                        IsChecked="{Binding Path=IsChecked}"
-                                      Style="{StaticResource ToolBarCheckBox}"/>
+                                    <RadioButton Content="{Binding Path=AttributeName}"
+                                                     IsChecked="{Binding Path=IsChecked}"
+                                                     Style="{StaticResource DefaultRadioButton}"
+                                                     GroupName="SortRadioButtons"/>
                                 </DataTemplate>
                             </ListBox.ItemTemplate>
                         </ListView>
 
                     </StackPanel>
 
+                </ScrollViewer>
+                
+                <DockPanel Grid.Column="1" Grid.Row="1" LastChildFill="False">
+                    <Button DockPanel.Dock="Right"
+                                    Margin="10"
+                                    Style="{StaticResource ToolbarButtonNotRound}"
+                                    Command="{Binding ApplyCommand}">
+                        <ContentControl Content="Anwenden"
+                                        Margin="4"
+                                        VerticalAlignment="Center"/>
+                    </Button>
+                </DockPanel>
 
-
-                </Grid>
-
-            </ScrollViewer>
-
+            </Grid>
         </DockPanel>
 
     </Grid>
