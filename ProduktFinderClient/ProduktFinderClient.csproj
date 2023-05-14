@@ -13,6 +13,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="6.0.16" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Resource Include="Views\pficon.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>

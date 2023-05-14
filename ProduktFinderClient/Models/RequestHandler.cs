@@ -1,10 +1,9 @@
-﻿using ProduktFinderClient.Components;
+﻿using Microsoft.AspNetCore.SignalR.Client;
+using ProduktFinderClient.Components;
 using ProduktFinderClient.DataTypes;
 using ProduktFinderClient.Models.ErrorLogging;
 using System;
 using System.Collections.Generic;
-using System.Net.Http;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media;
@@ -58,11 +57,20 @@ namespace ProduktFinderClient.Models
 
     public class RequestHandler
     {
-        private static readonly HttpClientQueue _httpQueue = new(10);
-        private static readonly string _baseUrl = @"https://77.24.97.93:7556/getParts/";
-        //private static readonly string _baseUrl = @"https://localhost:7321/getParts/";
+        //private static readonly HttpClientQueue _httpQueue = new(10);
+        private static readonly string _connectionUrl = "https://localhost:7321/ProduktFinder";
 
+        private static readonly HubConnection _connection;
 
+        static RequestHandler()
+        {
+            _connectionUrl = "https://localhost:7321/ProduktFinderHub/";
+            _connection = new HubConnectionBuilder()
+                                    .WithUrl(_connectionUrl)
+                                    .Build();
+
+            _connection.StartAsync();
+        }
 
         public static async Task SearchWith(string keyword, ModuleType api, int numberOfResultsPerAPI, StatusHandle statusHandle, Action<List<Part>?> OnSearchFinishedCallback, CancellationToken cancellationToken)
         {
@@ -86,38 +94,10 @@ namespace ProduktFinderClient.Models
                 statusHandle.TextLeft = $"<{formattedTime}> {moduleName} \"{keyword}\" ";
                 // UPDATE USER END
 
+                ProduktFinderParams input = new() { KeyWord = keyword, MaxPart = numberOfResultsPerAPI, ModuleType = api };
 
-                string url = _baseUrl + keyword + ";" + numberOfResultsPerAPI.ToString() + ";" + api;
-
-                HttpRequestMessage request = new(HttpMethod.Get, url);
-                HttpResponseMessage? response = null;
-
-                try
-                {
-                    response = await _httpQueue.EnqueueAsync(request, cancellationToken);
-                }
-                catch (OperationCanceledException)
-                {
-                    UpdateUserError(statusHandle, "Suche Abbgebrochen", keyword);
-                    return null;
-                }
-
-
-                if (response is null)
-                    throw new Exception("Problem with the HttpQueue");
-
-                if (!CheckErrorCodes(response))
-                {
-                    UpdateUserError(statusHandle, "Bei dem Modul trat ein Problem auf. Keine Antwort bekommen", keyword);
-                    return null;
-                }
-
-
-                string answer = await response.Content.ReadAsStringAsync();
-                ProduktFinderResponse? produktFinderResponse = JsonSerializer.Deserialize<ProduktFinderResponse>(answer, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                });
+                ProduktFinderResponse? produktFinderResponse =
+                    await _connection.InvokeAsync<ProduktFinderResponse?>("SearchWith", input, cancellationToken);
 
                 if (produktFinderResponse is null)
                 {
@@ -149,17 +129,6 @@ namespace ProduktFinderClient.Models
             statusHandle.TextRight = " " + message;
         }
 
-
-        private static bool CheckErrorCodes(HttpResponseMessage responseMessage)
-        {
-            if (responseMessage.StatusCode == System.Net.HttpStatusCode.InternalServerError)
-                return false;
-            if (responseMessage.StatusCode == System.Net.HttpStatusCode.NotFound)
-                return false;
-
-            return true;
-        }
-
         private static string FilterKeyWord(string keyWord)
         {
             if (keyWord is null) return "";
@@ -171,5 +140,11 @@ namespace ProduktFinderClient.Models
         }
     }
 
+    public class ProduktFinderParams
+    {
+        public int MaxPart { get; set; }
+        public ModuleType ModuleType { get; set; }
+        public string KeyWord { get; set; } = String.Empty;
+    }
 
 }
