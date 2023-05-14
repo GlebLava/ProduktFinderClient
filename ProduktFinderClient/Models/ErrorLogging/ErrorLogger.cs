@@ -14,7 +14,7 @@ namespace ProduktFinderClient.Models.ErrorLogging
         public static void LogError(Exception e, string keywordSearched)
         {
             MessageBox.Show("Es ist ein Fehler aufgetreten. Dieser wurde notiert. Entweder den versuchten Vorgang nochmal wiederholen oder das Program neustarten :)" +
-                "\n ERROR MESSAGE:" + e.Message);
+                "\n ERROR TYPE: " + e.GetType() + " \nERROR MESSAGE:" + e.Message);
 
             WriteToErrorLogFile($"\nTime: {DateTime.Parse(DateTime.Now.ToString())}\nKeyword searched: {keywordSearched}\nErrorMessage:{e.Message}\n Stacktrace:\n{e.StackTrace}");
         }

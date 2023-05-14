@@ -4,6 +4,7 @@ using ProduktFinderClient.DataTypes;
 using ProduktFinderClient.Models.ErrorLogging;
 using System;
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media;
@@ -61,6 +62,7 @@ namespace ProduktFinderClient.Models
         private static readonly string _connectionUrl = "https://localhost:7321/ProduktFinder";
 
         private static readonly HubConnection _connection;
+        private static SemaphoreSlim _semaphore;
 
         static RequestHandler()
         {
@@ -69,12 +71,15 @@ namespace ProduktFinderClient.Models
                                     .WithUrl(_connectionUrl)
                                     .Build();
 
+            _connection.Closed += OnConnectionClosed;
             _connection.StartAsync();
+            _semaphore = new SemaphoreSlim(10);
         }
 
         public static async Task SearchWith(string keyword, ModuleType api, int numberOfResultsPerAPI, StatusHandle statusHandle, Action<List<Part>?> OnSearchFinishedCallback, CancellationToken cancellationToken)
         {
             var result = await SearchWith(keyword, api, numberOfResultsPerAPI, statusHandle, cancellationToken);
+
 
             if (!cancellationToken.IsCancellationRequested)
                 OnSearchFinishedCallback(result);
@@ -83,6 +88,8 @@ namespace ProduktFinderClient.Models
 
         public static async Task<List<Part>?> SearchWith(string keyword, ModuleType api, int numberOfResultsPerAPI, StatusHandle statusHandle, CancellationToken cancellationToken)
         {
+            await _semaphore.WaitAsync(cancellationToken);
+
             try
             {
                 keyword = FilterKeyWord(keyword);
@@ -96,6 +103,8 @@ namespace ProduktFinderClient.Models
 
                 ProduktFinderParams input = new() { KeyWord = keyword, MaxPart = numberOfResultsPerAPI, ModuleType = api };
 
+                await EnsureConnection();
+                // If server is down this throws InvalidOperationException
                 ProduktFinderResponse? produktFinderResponse =
                     await _connection.InvokeAsync<ProduktFinderResponse?>("SearchWith", input, cancellationToken);
 
@@ -116,11 +125,47 @@ namespace ProduktFinderClient.Models
                 statusHandle.ColorRight = Colors.Green;
                 return results;
             }
+            catch (HttpRequestException)
+            {
+                UpdateUserError(statusHandle, "Es scheint keine Verbindung zum Server zu geben. Versuchen Sie es später neu", keyword);
+                return null;
+            }
+            catch (InvalidOperationException)
+            {
+                UpdateUserError(statusHandle, "Es scheint keine Verbindung zum Server zu geben. Versuchen Sie es später neu", keyword);
+                return null;
+            }
             catch (Exception e)
             {
                 ErrorLogger.LogError(e, keyword);
                 return null;
             }
+            finally
+            {
+                _semaphore.Release();
+            }
+        }
+
+        private static async Task EnsureConnection()
+        {
+            if (_connection.State == HubConnectionState.Disconnected)
+            {
+                await Task.Delay(1000);
+                await _connection.StartAsync(); //If server is down this throws httpRequestException
+            }
+        }
+
+
+        /// <summary>
+        /// Reason for this method is that we can subscribe it to _connection.Closed
+        /// If we didnt a random error would be thrown if the server shuts down
+        /// and disconnects unexpectedly, when our socket polls if the connection is still
+        /// alive.
+        /// This method does not do anything since SearchWith handles the automatic connection
+        /// anyway witht the help of EnsureConnection
+        /// </summary>
+        private static async Task OnConnectionClosed(Exception? e)
+        {
         }
 
         private static void UpdateUserError(StatusHandle statusHandle, string message, string keyword)
