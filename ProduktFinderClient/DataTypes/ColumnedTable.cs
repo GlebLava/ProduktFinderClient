@@ -11,10 +11,30 @@ namespace ProduktFinderClient.DataTypes
         protected string[] columns;
         protected List<string[]> rows;
 
+
         public ColumnedTable(string[] columns)
         {
             this.columns = columns;
             rows = new List<string[]>();
+        }
+
+
+        public string GetHeader(int column)
+        {
+            return columns[column];
+        }
+        public string GetField(int row, int column)
+        {
+            if (column < columns.Length && row < rows.Count)
+            {
+                
+                string[] array = rows[row];
+                return array[column];
+                    
+            } 
+                
+            else return " ";
+
         }
         public void AddNewRow(string[] row)
         {

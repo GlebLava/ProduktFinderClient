@@ -1,4 +1,5 @@
-﻿using ProduktFinderClient.Components;
+﻿using OfficeOpenXml;
+using ProduktFinderClient.Components;
 using ProduktFinderClient.CSV;
 using ProduktFinderClient.DataTypes;
 using ProduktFinderClient.Models;
@@ -7,10 +8,12 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using OfficeOpenXml;
 
 namespace ProduktFinderClient.Commands
 {
@@ -214,15 +217,36 @@ namespace ProduktFinderClient.Commands
 
         private void WriteAndOpenExcelFileWithRenameIfFileIsInUse(string filePath, ColumnedTable table)
         {
-            // TODO BAQIR MACH DES
+            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 
+            // Create a new Excel package
+            using (var package = new ExcelPackage())
+            {
+                 // Add a new worksheet to the Excel package
+                 ExcelWorksheet worksheet = package.Workbook.Worksheets.Add("Sheet1");
 
-            File.WriteAllText(filePath, ""); // DAS NUR FÜR DEMO, KANNST ENTFERNEN
+                 
+                 int columns = table.ColumnLength;
+                 for (int i = 0; i < columns; i++) 
+                 {
+                    worksheet.Cells[1, i + 1].Value = table.GetHeader(i);
 
+                 }
 
+                 for (int row = 0; row < columns; row++)
+                 {
+                    for (int col = 0; col < columns; col++)
+                    {
+                        worksheet.Cells[row + 2, col + 1].Value = table.GetField(row, col);
+                        
+                    }
+                    
+                 }
 
-
-
+                 // Save the Excel package to a file
+                 package.SaveAs(filePath);
+            
+            }
 
             // ÖFFNET EXCEL FILE, AM PFAD filePath
             ProcessStartInfo startInfo = new(filePath);

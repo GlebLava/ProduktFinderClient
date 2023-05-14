@@ -13,6 +13,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="EPPlus" Version="6.2.3" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Resource Include="Views\pficon.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
