@@ -19,8 +19,8 @@ public class OptionsConfigData
     public List<CheckableStringObject> AttributesChecked { get; set; } = new List<CheckableStringObject>();
     public List<CheckableStringObject> SortsChecked { get; set; } = new List<CheckableStringObject>();
 
-    public CheckableStringObject FilterAvailabilityMoreThen { get; set; } = new();
-    public CheckableStringObject FilterAvailabilityLessThen { get; set; } = new();
+    public CheckableStringObject FilterAvailabilityMoreThen { get; set; } = new() { AttributeName = "0" }; // Important dont forget
+    public CheckableStringObject FilterAvailabilityLessThen { get; set; } = new() { AttributeName = "0" }; // Important dont forget
     public CheckableStringObject FilterPriceLessThenAt { get; set; } = new CheckableStringObject() { isChecked = false, AttributeName = "0.0" };
     public string PriceLessThenAtAmount { get; set; } = "0";
 }

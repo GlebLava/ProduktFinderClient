@@ -88,19 +88,27 @@ public class OptionsWindowViewModel : ViewModelBase
     {
         if (FilterAvailabilityMoreThen.IsChecked)
         {
-            PartFilters.FilterAvailableMoreThen(parts, int.Parse(FilterAvailabilityMoreThen.AttributeName));
+            if (int.TryParse(FilterAvailabilityMoreThen.AttributeName, out int moreThen))
+            {
+                PartFilters.FilterAvailableMoreThen(parts, moreThen);
+            }
         }
 
         if (FilterAvailabilityLessThen.IsChecked)
         {
-            PartFilters.FilterAvailableLessThen(parts, int.Parse(FilterAvailabilityMoreThen.AttributeName));
+            if (int.TryParse(FilterAvailabilityLessThen.AttributeName, out int lessThen))
+            {
+                PartFilters.FilterAvailableMoreThen(parts, lessThen);
+            }
         }
 
         if (FilterPriceLessThenAt.IsChecked)
         {
-            PartFilters.FilterLessThenPriceAt(parts, float.Parse(FilterPriceLessThenAt.AttributeName), int.Parse(PriceLessThenAtAmount));
+            if (float.TryParse(FilterPriceLessThenAt.AttributeName, out float price) && int.TryParse(PriceLessThenAtAmount, out int lessAmount))
+            {
+                PartFilters.FilterLessThenPriceAt(parts, price, lessAmount);
+            }
         }
-
 
     }
 
