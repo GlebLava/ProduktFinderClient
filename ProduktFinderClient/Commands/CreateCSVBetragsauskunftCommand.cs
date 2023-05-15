@@ -230,7 +230,6 @@ namespace ProduktFinderClient.Commands
                 for (int i = 0; i < columns; i++)
                 {
                     worksheet.Cells[1, i + 1].Value = table.GetHeader(i);
-
                 }
 
                 for (int row = 0; row < table.RowLength; row++)

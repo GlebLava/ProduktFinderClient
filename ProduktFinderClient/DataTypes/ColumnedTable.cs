@@ -7,7 +7,7 @@ namespace ProduktFinderClient.DataTypes;
 public class ColumnedTable
 {
     public int ColumnLength { get { return columns.Length; } }
-    public int RowLength { get { return rows.Length; } }
+    public int RowLength { get { return rows.Count; } }
 
     protected string[] columns;
     protected List<string[]> rows;
