@@ -1,4 +1,5 @@
 ﻿using OfficeOpenXml;
+using OfficeOpenXml;
 using ProduktFinderClient.Components;
 using ProduktFinderClient.CSV;
 using ProduktFinderClient.DataTypes;
@@ -13,7 +14,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
-using OfficeOpenXml;
 
 namespace ProduktFinderClient.Commands
 {
@@ -222,30 +222,27 @@ namespace ProduktFinderClient.Commands
             // Create a new Excel package
             using (var package = new ExcelPackage())
             {
-                 // Add a new worksheet to the Excel package
-                 ExcelWorksheet worksheet = package.Workbook.Worksheets.Add("Sheet1");
+                // Add a new worksheet to the Excel package
+                ExcelWorksheet worksheet = package.Workbook.Worksheets.Add("Sheet1");
 
-                 
-                 int columns = table.ColumnLength;
-                 for (int i = 0; i < columns; i++) 
-                 {
+
+                int columns = table.ColumnLength;
+                for (int i = 0; i < columns; i++)
+                {
                     worksheet.Cells[1, i + 1].Value = table.GetHeader(i);
 
-                 }
+                }
 
-                 for (int row = 0; row < columns; row++)
-                 {
+                for (int row = 0; row < table.RowLength; row++)
+                {
                     for (int col = 0; col < columns; col++)
                     {
                         worksheet.Cells[row + 2, col + 1].Value = table.GetField(row, col);
-                        
                     }
-                    
-                 }
+                }
 
-                 // Save the Excel package to a file
-                 package.SaveAs(filePath);
-            
+                // Save the Excel package to a file
+                package.SaveAs(filePath);
             }
 
             // ÖFFNET EXCEL FILE, AM PFAD filePath
