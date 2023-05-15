@@ -89,7 +89,7 @@
                         <TextBox
                         Name="KeywordSearchBox"
                         Margin="20, 0, 0, 0"
-                        Text="bc847c"
+                        Text="{Binding SearchInput}"
                         Width="220"
                         VerticalAlignment="Top"
                         Style="{StaticResource ToolbarTextBox}"

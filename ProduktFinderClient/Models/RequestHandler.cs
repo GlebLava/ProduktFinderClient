@@ -58,15 +58,18 @@ namespace ProduktFinderClient.Models
 
     public class RequestHandler
     {
-        //private static readonly HttpClientQueue _httpQueue = new(10);
-        private static readonly string _connectionUrl = "https://localhost:7321/ProduktFinder";
+        /// <summary>
+        /// VERY IMPORTANT: Https can only be used with valid certs in production
+        /// </summary>
+
+        //private static readonly string _connectionUrl = "http://localhost:7322/ProduktFinderHub/";
+        private static readonly string _connectionUrl = "http://192.168.178.24:7322/ProduktFinderHub/";
 
         private static readonly HubConnection _connection;
         private static SemaphoreSlim _semaphore;
 
         static RequestHandler()
         {
-            _connectionUrl = "https://localhost:7321/ProduktFinderHub/";
             _connection = new HubConnectionBuilder()
                                     .WithUrl(_connectionUrl)
                                     .Build();

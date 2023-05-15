@@ -38,6 +38,8 @@ namespace ProduktFinderClient.Commands
 
             if (parameter is string keyword)
             {
+                LoadSaveSystem.SaveSearchedKeyWord(keyword);
+
                 SearchBeganCallBack?.Invoke();
                 int numberSearchResults = 20;
 

@@ -22,9 +22,8 @@ public class OptionsWindowViewModel : ViewModelBase
     public string ResultsInSearchPerAPI
     {
         get { return resultsInSearchPerAPI; }
-        set { resultsInSearchPerAPI = value; OnPropertyChanged(nameof(ResultsInSearchPerAPI)); }
+        set { resultsInSearchPerAPI = value; OnPropertyChanged(nameof(ResultsInSearchPerAPI)); SaveOptionsConfiguration(); }
     }
-
 
     /*
         Since attributes and sorts basically always do the same thing, they are automatically derived from 
@@ -54,27 +53,25 @@ public class OptionsWindowViewModel : ViewModelBase
     public CheckableStringObject FilterAvailabilityLessThen { get; set; }
     public CheckableStringObject FilterPriceLessThenAt { get; set; }
     private string priceLessThenAtAmount = "";
-    public string PriceLessThenAtAmount { get { return priceLessThenAtAmount; } set { priceLessThenAtAmount = value; OnPropertyChanged(nameof(PriceLessThenAtAmount)); } }
-
-
-
-
-
-
+    public string PriceLessThenAtAmount { get { return priceLessThenAtAmount; } set { priceLessThenAtAmount = value; OnPropertyChanged(nameof(PriceLessThenAtAmount)); SaveOptionsConfiguration(); } }
 
     #endregion
 
 
     public OptionsWindowViewModel()
     {
-        attributes = PartsGrid.COLUMN_TITLES.ToObservableCollection(OnPropertyChanged, nameof(Attributes), true);
-        sortsDpd = PartSorts.GetSortMethodStringTranslations().ToObservableCollection(OnPropertyChanged, nameof(SortsDpd));
+        OptionsConfigData optionsConfigData = LoadSaveSystem.LoadOptionsConfig();
+
+        attributes = PartsGrid.COLUMN_TITLES.ToObservableCollection(OnPropertyChangedAndSaveCallback, nameof(Attributes), true);
+        attributes.CheckFrom(optionsConfigData.AttributesChecked);
+        sortsDpd = PartSorts.GetSortMethodStringTranslations().ToObservableCollection(OnPropertyChangedAndSaveCallback, nameof(SortsDpd));
+        sortsDpd.CheckFrom(optionsConfigData.SortsChecked);
 
 
         // all CheckableStringObjects responsible for the Filters
-        FilterAvailabilityMoreThen = new CheckableStringObject(OnPropertyChanged, nameof(FilterAvailabilityMoreThen)) { AttributeName = "0" };
-        FilterAvailabilityLessThen = new CheckableStringObject(OnPropertyChanged, nameof(FilterAvailabilityLessThen)) { AttributeName = "0" };
-        FilterPriceLessThenAt = new CheckableStringObject(OnPropertyChanged, nameof(FilterPriceLessThenAt)) { AttributeName = "0.0" };
+        FilterAvailabilityMoreThen = new CheckableStringObject(OnPropertyChangedAndSaveCallback, nameof(FilterAvailabilityMoreThen)) { AttributeName = "0" };
+        FilterAvailabilityLessThen = new CheckableStringObject(OnPropertyChangedAndSaveCallback, nameof(FilterAvailabilityLessThen)) { AttributeName = "0" };
+        FilterPriceLessThenAt = new CheckableStringObject(OnPropertyChangedAndSaveCallback, nameof(FilterPriceLessThenAt)) { AttributeName = "0.0" };
         PriceLessThenAtAmount = "0";
 
         ApplyCommand = new FastCommand((o) => ApplyEvent?.Invoke(o, EventArgs.Empty));
@@ -109,6 +106,28 @@ public class OptionsWindowViewModel : ViewModelBase
 
             PartSorts.Sort(ref parts, checkObj.AttributeName);
         }
+    }
+
+    private void OnPropertyChangedAndSaveCallback(string propertyName)
+    {
+        OnPropertyChanged(propertyName);
+        SaveOptionsConfiguration();
+    }
+
+    private void SaveOptionsConfiguration()
+    {
+        OptionsConfigData optionsConfigData = new();
+
+        if (Attributes is not null) optionsConfigData.AttributesChecked = Attributes.ToList();
+        if (SortsDpd is not null) optionsConfigData.SortsChecked = SortsDpd.ToList();
+
+        try
+        {
+            optionsConfigData.ResultsInSearchPerAPI = int.Parse(ResultsInSearchPerAPI);
+        }
+        catch (FormatException) { }
+
+        LoadSaveSystem.SaveOptionsConfig(optionsConfigData);
     }
 
 }

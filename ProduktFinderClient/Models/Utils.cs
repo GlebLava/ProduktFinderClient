@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -42,6 +43,34 @@ public static class Utils
         // Only allow numbers
         Regex regex = new("^[0-9]*$");
         e.Handled = !regex.IsMatch(e.Text); // e.Handled = true blocks e.Handled = false lets the input through
+    }
+
+    public static T? Find<T>(this ObservableCollection<T> coll, Func<T, bool> predicate)
+    {
+        foreach (T item in coll)
+        {
+            if (predicate(item))
+                return item;
+        }
+
+        return default(T);
+    }
+
+    public static bool Find<T>(this ObservableCollection<T> coll, Func<T, bool> predicate, out T? output)
+    {
+        foreach (T item in coll)
+        {
+            if (predicate(item))
+            {
+                output = item;
+                return true;
+            }
+
+        }
+
+        output = default(T);
+        return false;
+
     }
 
 
