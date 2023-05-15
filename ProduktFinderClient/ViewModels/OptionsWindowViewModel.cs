@@ -57,9 +57,12 @@ public class OptionsWindowViewModel : ViewModelBase
 
     #endregion
 
+    bool constructed = false;
 
     public OptionsWindowViewModel()
     {
+        #region initValuesFromSave
+        // Init all values from saved Options
         OptionsConfigData optionsConfigData = LoadSaveSystem.LoadOptionsConfig();
 
         attributes = PartsGrid.COLUMN_TITLES.ToObservableCollection(OnPropertyChangedAndSaveCallback, nameof(Attributes), true);
@@ -69,12 +72,16 @@ public class OptionsWindowViewModel : ViewModelBase
 
 
         // all CheckableStringObjects responsible for the Filters
-        FilterAvailabilityMoreThen = new CheckableStringObject(OnPropertyChangedAndSaveCallback, nameof(FilterAvailabilityMoreThen)) { AttributeName = "0" };
-        FilterAvailabilityLessThen = new CheckableStringObject(OnPropertyChangedAndSaveCallback, nameof(FilterAvailabilityLessThen)) { AttributeName = "0" };
-        FilterPriceLessThenAt = new CheckableStringObject(OnPropertyChangedAndSaveCallback, nameof(FilterPriceLessThenAt)) { AttributeName = "0.0" };
-        PriceLessThenAtAmount = "0";
+        FilterAvailabilityMoreThen = new CheckableStringObject(OnPropertyChangedAndSaveCallback, nameof(FilterAvailabilityMoreThen), optionsConfigData.FilterAvailabilityMoreThen);
+        FilterAvailabilityLessThen = new CheckableStringObject(OnPropertyChangedAndSaveCallback, nameof(FilterAvailabilityLessThen), optionsConfigData.FilterAvailabilityLessThen);
+        FilterPriceLessThenAt = new CheckableStringObject(OnPropertyChangedAndSaveCallback, nameof(FilterPriceLessThenAt), optionsConfigData.FilterPriceLessThenAt);
+        PriceLessThenAtAmount = optionsConfigData.PriceLessThenAtAmount;
 
+        #endregion
         ApplyCommand = new FastCommand((o) => ApplyEvent?.Invoke(o, EventArgs.Empty));
+        ApplyEvent += SaveOptionConfigurationOnApply;
+
+        constructed = true;
     }
 
     public void Filter(ref List<Part> parts)
@@ -114,12 +121,24 @@ public class OptionsWindowViewModel : ViewModelBase
         SaveOptionsConfiguration();
     }
 
+    private void SaveOptionConfigurationOnApply(object? o, EventArgs e)
+    {
+        SaveOptionsConfiguration();
+    }
+
     private void SaveOptionsConfiguration()
     {
-        OptionsConfigData optionsConfigData = new();
+        if (!constructed) return;
 
-        if (Attributes is not null) optionsConfigData.AttributesChecked = Attributes.ToList();
-        if (SortsDpd is not null) optionsConfigData.SortsChecked = SortsDpd.ToList();
+        OptionsConfigData optionsConfigData = new();
+        optionsConfigData.AttributesChecked = Attributes.ToList();
+        optionsConfigData.SortsChecked = SortsDpd.ToList();
+
+        optionsConfigData.FilterAvailabilityLessThen = FilterAvailabilityLessThen;
+        optionsConfigData.FilterAvailabilityMoreThen = FilterAvailabilityMoreThen;
+        optionsConfigData.FilterPriceLessThenAt = FilterPriceLessThenAt;
+        optionsConfigData.PriceLessThenAtAmount = PriceLessThenAtAmount;
+
 
         try
         {

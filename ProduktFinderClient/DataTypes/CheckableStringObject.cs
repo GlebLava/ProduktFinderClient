@@ -44,8 +44,8 @@ namespace ProduktFinderClient.DataTypes
                 CheckableStringObject? found = input.Find((cs) => cs.AttributeName == checkableStringObject.AttributeName);
                 if (found is null)
                     continue;
-                // we use isChecked instead of IsChecked deliberetly, to not call the save function everytime
-                checkableStringObject.isChecked = found.isChecked;
+
+                checkableStringObject.IsChecked = found.IsChecked;
             }
         }
 
@@ -95,6 +95,14 @@ namespace ProduktFinderClient.DataTypes
         {
             this.OnPropertyChangedCallBack = OnPropertyChangedCallBack;
             this.callBackParam = callBackParam;
+        }
+
+        public CheckableStringObject(Action<string> OnPropertyChangedCallBack, string callBackParam, CheckableStringObject other)
+        {
+            this.OnPropertyChangedCallBack = OnPropertyChangedCallBack;
+            this.callBackParam = callBackParam;
+            this.IsChecked = other.IsChecked;
+            this.AttributeName = other.AttributeName;
         }
 
 
