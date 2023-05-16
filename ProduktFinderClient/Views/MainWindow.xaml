@@ -74,7 +74,6 @@
 
             </Grid>
 
-
             <!-- Toolbar -->
             <Border DockPanel.Dock="Top"
                     BorderThickness="0"
