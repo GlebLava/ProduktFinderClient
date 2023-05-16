@@ -110,8 +110,6 @@
         </Style.Triggers>
     </Style>
 
-
-
     <Style TargetType="Button" x:Key="WindowChromeFunctionalButton">
         <Setter Property="Background" Value="{StaticResource WindowChromeFunctionalColor}"/>
         <Setter Property="Foreground" Value="{StaticResource ToolbarForeGroundColor}"/>

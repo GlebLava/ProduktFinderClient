@@ -4,7 +4,10 @@ using ProduktFinderClient.DataTypes;
 using ProduktFinderClient.Models.ErrorLogging;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net.Http;
+using System.Net.WebSockets;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media;
@@ -62,26 +65,21 @@ namespace ProduktFinderClient.Models
         /// VERY IMPORTANT: Https can only be used with valid certs in production
         /// </summary>
 
-        //private static readonly string _connectionUrl = "http://localhost:7322/ProduktFinderHub/";
-        private static readonly string _connectionUrl = "http://192.168.178.24:7322/ProduktFinderHub/";
+        private static readonly string _connectionUrl = "http://localhost:7322/ProduktFinderHub/";
+        //private static readonly string _connectionUrl = "http://192.168.178.24:7322/ProduktFinderHub/";
 
-        private static readonly HubConnection _connection;
-        private static SemaphoreSlim _semaphore;
+        private static HubConnection? _connection;
+        private static readonly SemaphoreSlim _semaphore;
+        private static readonly object _lockVar = new(); //Only here for locking the building of the connection
 
         static RequestHandler()
         {
-            _connection = new HubConnectionBuilder()
-                                    .WithUrl(_connectionUrl)
-                                    .Build();
-
-            _connection.Closed += OnConnectionClosed;
-            _connection.StartAsync();
             _semaphore = new SemaphoreSlim(10);
         }
 
-        public static async Task SearchWith(string keyword, ModuleType api, int numberOfResultsPerAPI, StatusHandle statusHandle, Action<List<Part>?> OnSearchFinishedCallback, CancellationToken cancellationToken)
+        public static async Task SearchWith(string licenseKey, string keyword, ModuleType api, int numberOfResultsPerAPI, StatusHandle statusHandle, Action<List<Part>?> OnSearchFinishedCallback, CancellationToken cancellationToken)
         {
-            var result = await SearchWith(keyword, api, numberOfResultsPerAPI, statusHandle, cancellationToken);
+            var result = await SearchWith(licenseKey, keyword, api, numberOfResultsPerAPI, statusHandle, cancellationToken);
 
 
             if (!cancellationToken.IsCancellationRequested)
@@ -89,7 +87,7 @@ namespace ProduktFinderClient.Models
         }
 
 
-        public static async Task<List<Part>?> SearchWith(string keyword, ModuleType api, int numberOfResultsPerAPI, StatusHandle statusHandle, CancellationToken cancellationToken)
+        public static async Task<List<Part>?> SearchWith(string licenseKey, string keyword, ModuleType api, int numberOfResultsPerAPI, StatusHandle statusHandle, CancellationToken cancellationToken)
         {
             await _semaphore.WaitAsync(cancellationToken);
 
@@ -106,10 +104,10 @@ namespace ProduktFinderClient.Models
 
                 ProduktFinderParams input = new() { KeyWord = keyword, MaxPart = numberOfResultsPerAPI, ModuleType = api };
 
-                await EnsureConnection();
+                await EnsureConnection(licenseKey);
                 // If server is down this throws InvalidOperationException
                 ProduktFinderResponse? produktFinderResponse =
-                    await _connection.InvokeAsync<ProduktFinderResponse?>("SearchWith", input, cancellationToken);
+                    await _connection!.InvokeAsync<ProduktFinderResponse?>("SearchWith", input, cancellationToken);
 
                 if (produktFinderResponse is null)
                 {
@@ -130,12 +128,17 @@ namespace ProduktFinderClient.Models
             }
             catch (HttpRequestException)
             {
-                UpdateUserError(statusHandle, "Es scheint keine Verbindung zum Server zu geben. Versuchen Sie es später neu", keyword);
+                UpdateUserError(statusHandle, "Verbindung zum Server fehlgeschlagen. Versuchen Sie es später neu", keyword);
+                return null;
+            }
+            catch (WebSocketException)
+            {
+                UpdateUserError(statusHandle, "Verbindung zum Server fehlgeschlagen. Versuchen Sie es später neu", keyword);
                 return null;
             }
             catch (InvalidOperationException)
             {
-                UpdateUserError(statusHandle, "Es scheint keine Verbindung zum Server zu geben. Versuchen Sie es später neu", keyword);
+                UpdateUserError(statusHandle, "Verbindung zum Server fehlgeschlagen. Versuchen Sie es später neu", keyword);
                 return null;
             }
             catch (Exception e)
@@ -149,13 +152,36 @@ namespace ProduktFinderClient.Models
             }
         }
 
-        private static async Task EnsureConnection()
+        /// <summary>
+        /// Throws websocketexception if the handshake wasnt met
+        /// </summary>
+        /// <param name="licenseKey"></param>
+        /// <returns></returns>
+        private static async Task EnsureConnection(string licenseKey)
         {
-            if (_connection.State == HubConnectionState.Disconnected)
-            {
+            if (_connection is not null && _connection.State == HubConnectionState.Disconnected)
                 await Task.Delay(1000);
-                await _connection.StartAsync(); //If server is down this throws httpRequestException
+
+            lock (_lockVar)
+            {
+                if (_connection is null || _connection.State == HubConnectionState.Disconnected)
+                {
+                    _connection = new HubConnectionBuilder()
+                            .WithUrl(_connectionUrl, options =>
+                            {
+                                options.Headers["VmRWfFt23B"] = Encode(licenseKey);
+                            })
+                            .Build();
+
+                    _connection.Closed += OnConnectionClosed;
+                    _connection.StartAsync(); //If server is down this throws httpRequestException
+                }
             }
+        }
+
+        private static string Encode(string stringToEncode)
+        {
+            return stringToEncode;
         }
 
 
@@ -192,7 +218,7 @@ namespace ProduktFinderClient.Models
     {
         public int MaxPart { get; set; }
         public ModuleType ModuleType { get; set; }
-        public string KeyWord { get; set; } = String.Empty;
+        public string KeyWord { get; set; } = string.Empty;
     }
 
 }

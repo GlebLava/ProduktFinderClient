@@ -74,7 +74,7 @@ namespace ProduktFinderClient.ViewModels
 
             OpenOptionsCommand = new OpenOptionsCommand(optionsWindowViewModel);
             SearchCommand = new SearchCommand("Suchen", "Abbrechen", s => SearchButtonContent = s, ClearGrid, OnSearchFinishedCallback, optionsWindowViewModel, this, GetNewStatusHandle);
-            OpenCSVPreviewCommand = new OpenCSVPreviewCommand(this, GetNewStatusHandle);
+            OpenCSVPreviewCommand = new OpenCSVPreviewCommand(this, optionsWindowViewModel, GetNewStatusHandle);
             UserUpdate = "";
             SearchInput = LoadSaveSystem.LoadLastSearchedKeyWord();
         }

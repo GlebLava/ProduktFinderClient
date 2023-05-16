@@ -5,6 +5,7 @@ using ProduktFinderClient.Models;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Windows;
 using System.Windows.Documents;
 using System.Windows.Input;
 
@@ -55,6 +56,25 @@ public class OptionsWindowViewModel : ViewModelBase
     private string priceLessThenAtAmount = "";
     public string PriceLessThenAtAmount { get { return priceLessThenAtAmount; } set { priceLessThenAtAmount = value; OnPropertyChanged(nameof(PriceLessThenAtAmount)); SaveOptionsConfiguration(); } }
 
+
+    private string actualLicenseKey = "";
+    private string licenseKeyDisplayed = "";
+
+    public string LicenseKey
+    {
+        get { return licenseKeyDisplayed; }
+        set { licenseKeyDisplayed = HandleLicenseKeyInput(value); OnPropertyChanged(nameof(LicenseKey)); SaveOptionsConfiguration(); }
+    }
+
+    public ICommand LicenseKeyVisibilityToggleCommand { get; }
+    private string licenseKeyVisibilityToggleContent = "";
+    public string LicenseKeyVisibilityToggleContent
+    {
+        get { return licenseKeyVisibilityToggleContent; }
+        set { licenseKeyVisibilityToggleContent = value; OnPropertyChanged(nameof(LicenseKeyVisibilityToggleContent)); }
+    }
+    private bool isLicenseKeyHidden = true;
+    private string hiddenString = "▬▬▬▬▬▬▬▬▬▬";
     #endregion
 
     bool constructed = false;
@@ -77,10 +97,15 @@ public class OptionsWindowViewModel : ViewModelBase
         FilterPriceLessThenAt = new CheckableStringObject(OnPropertyChangedAndSaveCallback, nameof(FilterPriceLessThenAt), optionsConfigData.FilterPriceLessThenAt);
         PriceLessThenAtAmount = optionsConfigData.PriceLessThenAtAmount;
 
+        actualLicenseKey = optionsConfigData.LicenseKey;
+        LicenseKey = actualLicenseKey; // gets handled anyway 
         #endregion
         ApplyCommand = new FastCommand((o) => ApplyEvent?.Invoke(o, EventArgs.Empty));
         ApplyEvent += SaveOptionConfigurationOnApply;
 
+
+        LicenseKeyVisibilityToggleCommand = new FastCommand(ToggleLicenseKeyVisibility);
+        LicenseKeyVisibilityToggleContent = "Lizensschlüssel anzeigen";
         constructed = true;
     }
 
@@ -123,6 +148,11 @@ public class OptionsWindowViewModel : ViewModelBase
         }
     }
 
+    public string GetLicenseKey()
+    {
+        return actualLicenseKey;
+    }
+
     private void OnPropertyChangedAndSaveCallback(string propertyName)
     {
         OnPropertyChanged(propertyName);
@@ -146,7 +176,7 @@ public class OptionsWindowViewModel : ViewModelBase
         optionsConfigData.FilterAvailabilityMoreThen = FilterAvailabilityMoreThen;
         optionsConfigData.FilterPriceLessThenAt = FilterPriceLessThenAt;
         optionsConfigData.PriceLessThenAtAmount = PriceLessThenAtAmount;
-
+        optionsConfigData.LicenseKey = actualLicenseKey;
 
         try
         {
@@ -157,5 +187,26 @@ public class OptionsWindowViewModel : ViewModelBase
         LoadSaveSystem.SaveOptionsConfig(optionsConfigData);
     }
 
+
+    private string HandleLicenseKeyInput(string input)
+    {
+        if (isLicenseKeyHidden)
+        {
+            return hiddenString;
+        }
+
+        if (input.Length > 16)
+            input = input.Substring(0, 16);
+
+        actualLicenseKey = input;
+        return input;
+    }
+
+    private void ToggleLicenseKeyVisibility(object? input)
+    {
+        LicenseKeyVisibilityToggleContent = isLicenseKeyHidden ? "Lizensschlüssel anzeigen" : "Lizensschlüssel verbergen";
+        isLicenseKeyHidden = !isLicenseKeyHidden;
+        LicenseKey = isLicenseKeyHidden ? hiddenString : actualLicenseKey;
+    }
 }
 

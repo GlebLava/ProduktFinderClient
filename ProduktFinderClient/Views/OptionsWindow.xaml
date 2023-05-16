@@ -176,6 +176,16 @@
                             </ListBox.ItemTemplate>
                         </ListView>
 
+
+                        <StackPanel Orientation="Horizontal">
+                            <TextBox Style="{StaticResource ToolbarTextBox}"
+                                     MinWidth="100"
+                                     Text="{Binding LicenseKey, Mode=TwoWay}"/>
+                            <Button Content="{Binding LicenseKeyVisibilityToggleContent}"
+                                    Command="{Binding LicenseKeyVisibilityToggleCommand}">
+                            </Button>
+                        </StackPanel>
+
                     </StackPanel>
 
                 </ScrollViewer>

@@ -142,7 +142,6 @@ public static class LoadSaveSystem
         configData.OptionsConfigData = data;
         SaveData(configData);
     }
-
 }
 
 
