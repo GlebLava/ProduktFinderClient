@@ -18,6 +18,7 @@ public class OptionsWindowViewModel : ViewModelBase
     #region dpds
 
     public ICommand ApplyCommand { get; }
+    public ICommand OnOptionsWindowCloseCommand { get; }
 
     private string resultsInSearchPerAPI = "10";
     public string ResultsInSearchPerAPI
@@ -103,6 +104,7 @@ public class OptionsWindowViewModel : ViewModelBase
         ApplyCommand = new FastCommand((o) => ApplyEvent?.Invoke(o, EventArgs.Empty));
         ApplyEvent += SaveOptionConfigurationOnApply;
 
+        OnOptionsWindowCloseCommand = new FastCommand(OnOptionsWindowClose);
 
         LicenseKeyVisibilityToggleCommand = new FastCommand(ToggleLicenseKeyVisibility);
         LicenseKeyVisibilityToggleContent = "Lizensschlüssel anzeigen";
@@ -204,9 +206,14 @@ public class OptionsWindowViewModel : ViewModelBase
 
     private void ToggleLicenseKeyVisibility(object? input)
     {
-        LicenseKeyVisibilityToggleContent = isLicenseKeyHidden ? "Lizensschlüssel anzeigen" : "Lizensschlüssel verbergen";
         isLicenseKeyHidden = !isLicenseKeyHidden;
+        LicenseKeyVisibilityToggleContent = isLicenseKeyHidden ? "Lizensschlüssel anzeigen" : "Lizensschlüssel verbergen";
         LicenseKey = isLicenseKeyHidden ? hiddenString : actualLicenseKey;
+    }
+
+    private void OnOptionsWindowClose(object? input)
+    {
+        if (!isLicenseKeyHidden) ToggleLicenseKeyVisibility(null);
     }
 }
 

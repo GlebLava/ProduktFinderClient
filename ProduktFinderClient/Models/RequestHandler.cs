@@ -65,12 +65,13 @@ namespace ProduktFinderClient.Models
         /// VERY IMPORTANT: Https can only be used with valid certs in production
         /// </summary>
 
-        private static readonly string _connectionUrl = "http://localhost:7322/ProduktFinderHub/";
-        //private static readonly string _connectionUrl = "http://192.168.178.24:7322/ProduktFinderHub/";
+        //private static readonly string _connectionUrl = "http://localhost:7322/ProduktFinderHub/";
+        private static readonly string _connectionUrl = "http://192.168.178.24:7322/ProduktFinderHub/";
 
         private static HubConnection? _connection;
         private static readonly SemaphoreSlim _semaphore;
         private static readonly object _lockVar = new(); //Only here for locking the building of the connection
+        private static string _lastUsedLicenseKey = "";
 
         static RequestHandler()
         {
@@ -164,7 +165,7 @@ namespace ProduktFinderClient.Models
 
             lock (_lockVar)
             {
-                if (_connection is null || _connection.State == HubConnectionState.Disconnected)
+                if (_connection is null || _connection.State == HubConnectionState.Disconnected || _lastUsedLicenseKey != licenseKey)
                 {
                     _connection = new HubConnectionBuilder()
                             .WithUrl(_connectionUrl, options =>
@@ -175,6 +176,7 @@ namespace ProduktFinderClient.Models
 
                     _connection.Closed += OnConnectionClosed;
                     _connection.StartAsync(); //If server is down this throws httpRequestException
+                    _lastUsedLicenseKey = licenseKey;
                 }
             }
         }

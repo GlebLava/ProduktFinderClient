@@ -59,7 +59,8 @@
                     <Button Width="35" Content="◻" Name="MaximzeButton" Style="{StaticResource WindowChromeButton}"
                             FontWeight="Bold" FontSize="20"/>
                     <Button Width="35" Content="✖" Name="CloseButton" Style="{StaticResource WindowChromeButton}"
-                            FontWeight="Bold" FontSize="15"/>
+                            FontWeight="Bold" FontSize="15"
+                            Command="{Binding OnOptionsWindowCloseCommand}"/>
                 </StackPanel>
             </Grid>
             <!-- END ChromeWindow -->
@@ -177,6 +178,9 @@
                         </ListView>
 
 
+                        <TextBlock Text="Lizensschlüssel:"
+                                       Margin="0,10,0,0"
+                                       Style="{StaticResource OptionsHeaderTextblock}"/>
                         <StackPanel Orientation="Horizontal">
                             <TextBox Style="{StaticResource ToolbarTextBox}"
                                      MinWidth="100"
