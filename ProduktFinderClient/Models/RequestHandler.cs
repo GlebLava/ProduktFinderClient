@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.SignalR.Client;
+﻿using Microsoft.AspNetCore.SignalR;
+using Microsoft.AspNetCore.SignalR.Client;
 using ProduktFinderClient.Components;
 using ProduktFinderClient.DataTypes;
 using ProduktFinderClient.Models.ErrorLogging;
@@ -68,10 +69,11 @@ namespace ProduktFinderClient.Models
         //private static readonly string _connectionUrl = "http://localhost:7322/ProduktFinderHub/";
         private static readonly string _connectionUrl = "http://192.168.178.24:7322/ProduktFinderHub/";
 
-        private static HubConnection? _connection;
+        private static HubConnection? connection;
         private static readonly SemaphoreSlim _semaphore;
-        private static readonly object _lockVar = new(); //Only here for locking the building of the connection
-        private static string _lastUsedLicenseKey = "";
+        private static readonly SemaphoreSlim _connectionSemaphore = new(1); //Only here for locking the building of the connection
+        private static string lastUsedLicenseKey = "";
+        private static Exception? lastException;
 
         static RequestHandler()
         {
@@ -108,7 +110,7 @@ namespace ProduktFinderClient.Models
                 await EnsureConnection(licenseKey);
                 // If server is down this throws InvalidOperationException
                 ProduktFinderResponse? produktFinderResponse =
-                    await _connection!.InvokeAsync<ProduktFinderResponse?>("SearchWith", input, cancellationToken);
+                    await connection!.InvokeAsync<ProduktFinderResponse?>("SearchWith", input, cancellationToken);
 
                 if (produktFinderResponse is null)
                 {
@@ -139,7 +141,16 @@ namespace ProduktFinderClient.Models
             }
             catch (InvalidOperationException)
             {
-                UpdateUserError(statusHandle, "Verbindung zum Server fehlgeschlagen. Versuchen Sie es später neu", keyword);
+                if (lastException is HubException he)
+                    HandleHubException(he, statusHandle, keyword);
+                else
+                    UpdateUserError(statusHandle, "Verbindung zum Server fehlgeschlagen. Versuchen Sie es später neu", keyword);
+
+                return null;
+            }
+            catch (HubException e)
+            {
+                HandleHubException(e, statusHandle, keyword);
                 return null;
             }
             catch (Exception e)
@@ -160,24 +171,49 @@ namespace ProduktFinderClient.Models
         /// <returns></returns>
         private static async Task EnsureConnection(string licenseKey)
         {
-            if (_connection is not null && _connection.State == HubConnectionState.Disconnected)
+            if (connection is not null && connection.State == HubConnectionState.Disconnected)
                 await Task.Delay(1000);
 
-            lock (_lockVar)
+
+            _connectionSemaphore.Wait();
+            try
             {
-                if (_connection is null || _connection.State == HubConnectionState.Disconnected || _lastUsedLicenseKey != licenseKey)
+                if (connection is null || connection.State == HubConnectionState.Disconnected || lastUsedLicenseKey != licenseKey)
                 {
-                    _connection = new HubConnectionBuilder()
+                    connection = new HubConnectionBuilder()
                             .WithUrl(_connectionUrl, options =>
                             {
                                 options.Headers["VmRWfFt23B"] = Encode(licenseKey);
                             })
                             .Build();
 
-                    _connection.Closed += OnConnectionClosed;
-                    _connection.StartAsync(); //If server is down this throws httpRequestException
-                    _lastUsedLicenseKey = licenseKey;
+
+                    /*
+                      To see what is happening here see https://github.com/dotnet/aspnetcore/issues/10766
+                      Although await _connection.StartAsync() should block until the connection is received, it does not.
+                      We try to do the same thing here as the ThreadOwner (see link)
+                      Although we solve it in a different way, because the solution proposed throws the wrong Exception. We use
+                      the Exception Message to differentiate between too many Instances and wrong licence key
+
+                      To solve this lastException is used.
+                      Everywhere where an SignalR related Exception is thrown, we check for lastException first. If lastException is
+                      a HubException, then StartAsync failed related to licenseKey.
+                    */
+                    connection.Closed += OnConnectionClosed;
+                    //If server is down this throws httpRequestException
+                    lastException = null;
+                    await connection.StartAsync();
+                    lastUsedLicenseKey = licenseKey;
                 }
+            }
+            // This needs to be here, else any Exceptions dont get thrown
+            catch (Exception)
+            {
+                throw;
+            }
+            finally
+            {
+                _connectionSemaphore.Release();
             }
         }
 
@@ -197,6 +233,7 @@ namespace ProduktFinderClient.Models
         /// </summary>
         private static async Task OnConnectionClosed(Exception? e)
         {
+            lastException = e;
         }
 
         private static void UpdateUserError(StatusHandle statusHandle, string message, string keyword)
@@ -214,6 +251,16 @@ namespace ProduktFinderClient.Models
 
             return result;
         }
+
+        private static void HandleHubException(HubException e, StatusHandle statusHandle, string keyword)
+        {
+            if (e.Message.Contains("Not Authorized"))
+                UpdateUserError(statusHandle, "Falscher Lizensschlüssel. Aktualisieren sie Ihren Lizensschlüssel in den Optionen", keyword);
+
+            if (e.Message.Contains("Too many instances"))
+                UpdateUserError(statusHandle, "Sie haben zu viele Produktfinder offen. Schließen Sie eine der Instanzen um diese benutzen zu können", keyword);
+        }
+
     }
 
     public class ProduktFinderParams
