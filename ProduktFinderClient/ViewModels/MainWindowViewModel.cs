@@ -17,8 +17,15 @@ namespace ProduktFinderClient.ViewModels
 
         public ICommand SearchCommand { get; }
 
-        public string? searchButtonContent;
-        public string? SearchButtonContent
+        public string searchInput = string.Empty;
+        public string SearchInput
+        {
+            get { return searchInput; }
+            set { searchInput = value; OnPropertyChanged(nameof(SearchInput)); }
+        }
+
+        public string searchButtonContent = string.Empty;
+        public string SearchButtonContent
         {
             get { return searchButtonContent; }
             set { searchButtonContent = value; OnPropertyChanged(nameof(SearchButtonContent)); }
@@ -39,7 +46,7 @@ namespace ProduktFinderClient.ViewModels
         public ObservableCollection<CheckableStringObject>? Lieferanten
         {
             get { return lieferanten; }
-            set { lieferanten = value; OnPropertyChanged(nameof(Lieferanten)); }
+            set { lieferanten = value; OnPropertyChanged(nameof(Lieferanten)); OnSettingToSaveChanged(); }
         }
 
         #endregion
@@ -67,8 +74,9 @@ namespace ProduktFinderClient.ViewModels
 
             OpenOptionsCommand = new OpenOptionsCommand(optionsWindowViewModel);
             SearchCommand = new SearchCommand("Suchen", "Abbrechen", s => SearchButtonContent = s, ClearGrid, OnSearchFinishedCallback, optionsWindowViewModel, this, GetNewStatusHandle);
-            OpenCSVPreviewCommand = new OpenCSVPreviewCommand(this, GetNewStatusHandle);
+            OpenCSVPreviewCommand = new OpenCSVPreviewCommand(this, optionsWindowViewModel, GetNewStatusHandle);
             UserUpdate = "";
+            SearchInput = LoadSaveSystem.LoadLastSearchedKeyWord();
         }
 
         private void OnGridSettingsChanged(object? sender, EventArgs e)
@@ -111,9 +119,18 @@ namespace ProduktFinderClient.ViewModels
             _partsGrid.ChangeColumnsVisibility(arr);
         }
 
+        /// <summary>
+        /// Initialises the collection Lieferanten by using ModuleTranslations.
+        /// Then checks all lieferanten which were saved from the last session
+        /// 
+        /// This and OnSettingToSaveChanged have some potential to be optimized if needed
+        /// </summary>
         private void InitLieferanten()
         {
             // Init the observable colletion Lieferante from the Enum ModuleTypes and Filter from RequestHandler
+            // this is for ease of use, so if new ModuleTypes are added, we just need to update the translation in one Place, in ModuleTranslations
+            // rest happens automatically.
+
             ObservableCollection<string> lieferantenTranslation = new ObservableCollection<string>();
             foreach (ModuleType moduleType in Enum.GetValues(typeof(ModuleType)))
             {
@@ -121,11 +138,31 @@ namespace ProduktFinderClient.ViewModels
                 lieferantenTranslation.Add(moduleString);
             }
 
-            Lieferanten = new ObservableCollection<CheckableStringObject>
-                (CheckableStringObject.StringCollectionToCheckableStringObject(lieferantenTranslation, OnPropertyChanged));
 
-            foreach (CheckableStringObject lieferant in Lieferanten)
-                lieferant.IsChecked = true;
+            // HERE WE DELIBERATLY CALL THE PRIVATE PART OF lieferanten
+            // The problem is if we call Lieferanten, OnSettingToSaveChanged would be called,
+            // before we load our settings from the previous session.
+            // So Lieferanten would be initialised with all Checkboxes checked to false
+            // then we would save these settings immediately, and then we would load the just saved settings
+            lieferanten = new ObservableCollection<CheckableStringObject>
+                (CheckableStringObject.StringCollectionToCheckableStringObject(lieferantenTranslation,
+                (s) => { OnPropertyChanged(s); OnSettingToSaveChanged(); }, // Everytime a checkbox is checked or unchecked, we also want the Settings to be saved
+                false)); // Since we later check all Suppliers that are in the saved Hashset, we need the default to be false
+
+            // Here we initialise which Supplier is checked based on our Save from last session
+            HashSet<ModuleType> savedFromLastSession = LoadSaveSystem.LoadCheckedSuppliers();
+            foreach (ModuleType savedSupplierFromLastSession in savedFromLastSession)
+            {
+                string savedFromLastSessionToString;
+                ModuleTranslations.ModulesTranslation.TryGetValue(savedSupplierFromLastSession, out savedFromLastSessionToString);
+
+                if (lieferanten.Find((cs) => cs.AttributeName == savedFromLastSessionToString, out CheckableStringObject? output))
+                {
+                    output!.IsChecked = true;
+                }
+            }
+
+            Lieferanten = lieferanten;
         }
 
         private StatusHandle GetNewStatusHandle()
@@ -136,5 +173,25 @@ namespace ProduktFinderClient.ViewModels
             }
         }
 
+        /// <summary>
+        /// This method is responsible for saving all Settings worthy to save
+        /// </summary>
+        private void OnSettingToSaveChanged()
+        {
+            if (Lieferanten is not null)
+            {
+                HashSet<ModuleType> thisSessionsSuppliersToSave = new();
+                foreach (CheckableStringObject checkableString in Lieferanten)
+                {
+                    if (!checkableString.IsChecked)
+                        continue;
+
+                    ModuleTranslations.ModulesTranslation.TryGetKey(checkableString.AttributeName, out ModuleType module);
+                    thisSessionsSuppliersToSave.Add(module);
+                }
+
+                LoadSaveSystem.SaveCheckedSuppliers(thisSessionsSuppliersToSave);
+            }
+        }
     }
 }

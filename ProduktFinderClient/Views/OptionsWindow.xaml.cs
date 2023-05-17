@@ -212,7 +212,6 @@ namespace ProduktFinderClient.Views
         {
             if (Keyboard.IsKeyDown(Key.LeftCtrl))
             {
-
                 if (e.Delta < 0 && FontSize > 2)
                     FontSize--;
                 else if (FontSize < 50)

@@ -1,6 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
+using System.Reflection;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace ProduktFinderClient.DataTypes
 {
@@ -17,18 +21,55 @@ namespace ProduktFinderClient.DataTypes
 
             return ret;
         }
+
+        public static List<CheckableStringObject> ToList(this ObservableCollection<CheckableStringObject> input)
+        {
+            List<CheckableStringObject> ret = new();
+            foreach (var checkableStringObject in input)
+            {
+                ret.Add(checkableStringObject);
+            }
+            return ret;
+        }
+
+        /// <summary>
+        /// This looks over all CheckableStrings in input and checks the one corresponding in obs if it exists
+        /// </summary>
+        /// <param name="obs"></param>
+        /// <param name="input"></param>
+        public static void CheckFrom(this ObservableCollection<CheckableStringObject> obs, List<CheckableStringObject> input)
+        {
+            foreach (var checkableStringObject in obs)
+            {
+                CheckableStringObject? found = input.Find((cs) => cs.AttributeName == checkableStringObject.AttributeName);
+                if (found is null)
+                    continue;
+
+                checkableStringObject.IsChecked = found.IsChecked;
+            }
+        }
+
+
+
     }
 
 
     public class CheckableStringObject
     {
-
+        [JsonIgnore]
         private readonly Action<string> OnPropertyChangedCallBack;
+        [JsonIgnore]
         private string callBackParam = "";
+
 
         public string AttributeName { get; set; } = "";
 
-        private bool isChecked;
+        /// <summary>
+        /// DO NOT USE ONLY PUBLIC FOR JSON SERIALIZATION PURPOSES, I AM TO LAZY TO WRITE A CUSTOM CONVERTER
+        /// </summary>
+        public bool isChecked { get; set; } = false;
+
+        [JsonIgnore]
         public bool IsChecked
         {
             get { return isChecked; }
@@ -42,6 +83,9 @@ namespace ProduktFinderClient.DataTypes
             }
         }
 
+        [JsonConstructor] //This is only here for json to work
+        public CheckableStringObject() { }
+
         public CheckableStringObject(Action<string> OnPropertyChangedCallBack)
         {
             this.OnPropertyChangedCallBack = OnPropertyChangedCallBack;
@@ -51,6 +95,14 @@ namespace ProduktFinderClient.DataTypes
         {
             this.OnPropertyChangedCallBack = OnPropertyChangedCallBack;
             this.callBackParam = callBackParam;
+        }
+
+        public CheckableStringObject(Action<string> OnPropertyChangedCallBack, string callBackParam, CheckableStringObject other)
+        {
+            this.OnPropertyChangedCallBack = OnPropertyChangedCallBack;
+            this.callBackParam = callBackParam;
+            this.IsChecked = other.IsChecked;
+            this.AttributeName = other.AttributeName;
         }
 
 
@@ -68,6 +120,5 @@ namespace ProduktFinderClient.DataTypes
 
             return newColl;
         }
-
     }
 }

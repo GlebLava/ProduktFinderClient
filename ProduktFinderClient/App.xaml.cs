@@ -1,4 +1,5 @@
-﻿using ProduktFinderClient.DataTypes;
+﻿using Microsoft.AspNetCore.SignalR.Client;
+using ProduktFinderClient.DataTypes;
 using ProduktFinderClient.ViewModels;
 using System;
 using System.Collections.Generic;

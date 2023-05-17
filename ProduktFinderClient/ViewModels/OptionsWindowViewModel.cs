@@ -5,6 +5,7 @@ using ProduktFinderClient.Models;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Windows;
 using System.Windows.Documents;
 using System.Windows.Input;
 
@@ -17,14 +18,14 @@ public class OptionsWindowViewModel : ViewModelBase
     #region dpds
 
     public ICommand ApplyCommand { get; }
+    public ICommand OnOptionsWindowCloseCommand { get; }
 
     private string resultsInSearchPerAPI = "10";
     public string ResultsInSearchPerAPI
     {
         get { return resultsInSearchPerAPI; }
-        set { resultsInSearchPerAPI = value; OnPropertyChanged(nameof(ResultsInSearchPerAPI)); }
+        set { resultsInSearchPerAPI = value; OnPropertyChanged(nameof(ResultsInSearchPerAPI)); SaveOptionsConfiguration(); }
     }
-
 
     /*
         Since attributes and sorts basically always do the same thing, they are automatically derived from 
@@ -54,49 +55,87 @@ public class OptionsWindowViewModel : ViewModelBase
     public CheckableStringObject FilterAvailabilityLessThen { get; set; }
     public CheckableStringObject FilterPriceLessThenAt { get; set; }
     private string priceLessThenAtAmount = "";
-    public string PriceLessThenAtAmount { get { return priceLessThenAtAmount; } set { priceLessThenAtAmount = value; OnPropertyChanged(nameof(PriceLessThenAtAmount)); } }
+    public string PriceLessThenAtAmount { get { return priceLessThenAtAmount; } set { priceLessThenAtAmount = value; OnPropertyChanged(nameof(PriceLessThenAtAmount)); SaveOptionsConfiguration(); } }
 
 
+    private string actualLicenseKey = "";
+    private string licenseKeyDisplayed = "";
 
+    public string LicenseKey
+    {
+        get { return licenseKeyDisplayed; }
+        set { licenseKeyDisplayed = HandleLicenseKeyInput(value); OnPropertyChanged(nameof(LicenseKey)); SaveOptionsConfiguration(); }
+    }
 
-
-
-
+    public ICommand LicenseKeyVisibilityToggleCommand { get; }
+    private string licenseKeyVisibilityToggleContent = "";
+    public string LicenseKeyVisibilityToggleContent
+    {
+        get { return licenseKeyVisibilityToggleContent; }
+        set { licenseKeyVisibilityToggleContent = value; OnPropertyChanged(nameof(LicenseKeyVisibilityToggleContent)); }
+    }
+    private bool isLicenseKeyHidden = true;
+    private string hiddenString = "▬▬▬▬▬▬▬▬▬▬";
     #endregion
 
+    bool constructed = false;
 
     public OptionsWindowViewModel()
     {
-        attributes = PartsGrid.COLUMN_TITLES.ToObservableCollection(OnPropertyChanged, nameof(Attributes), true);
-        sortsDpd = PartSorts.GetSortMethodStringTranslations().ToObservableCollection(OnPropertyChanged, nameof(SortsDpd));
+        #region initValuesFromSave
+        // Init all values from saved Options
+        OptionsConfigData optionsConfigData = LoadSaveSystem.LoadOptionsConfig();
+
+        attributes = PartsGrid.COLUMN_TITLES.ToObservableCollection(OnPropertyChangedAndSaveCallback, nameof(Attributes), true);
+        attributes.CheckFrom(optionsConfigData.AttributesChecked);
+        sortsDpd = PartSorts.GetSortMethodStringTranslations().ToObservableCollection(OnPropertyChangedAndSaveCallback, nameof(SortsDpd));
+        sortsDpd.CheckFrom(optionsConfigData.SortsChecked);
 
 
         // all CheckableStringObjects responsible for the Filters
-        FilterAvailabilityMoreThen = new CheckableStringObject(OnPropertyChanged, nameof(FilterAvailabilityMoreThen)) { AttributeName = "0" };
-        FilterAvailabilityLessThen = new CheckableStringObject(OnPropertyChanged, nameof(FilterAvailabilityLessThen)) { AttributeName = "0" };
-        FilterPriceLessThenAt = new CheckableStringObject(OnPropertyChanged, nameof(FilterPriceLessThenAt)) { AttributeName = "0.0" };
-        PriceLessThenAtAmount = "0";
+        FilterAvailabilityMoreThen = new CheckableStringObject(OnPropertyChangedAndSaveCallback, nameof(FilterAvailabilityMoreThen), optionsConfigData.FilterAvailabilityMoreThen);
+        FilterAvailabilityLessThen = new CheckableStringObject(OnPropertyChangedAndSaveCallback, nameof(FilterAvailabilityLessThen), optionsConfigData.FilterAvailabilityLessThen);
+        FilterPriceLessThenAt = new CheckableStringObject(OnPropertyChangedAndSaveCallback, nameof(FilterPriceLessThenAt), optionsConfigData.FilterPriceLessThenAt);
+        PriceLessThenAtAmount = optionsConfigData.PriceLessThenAtAmount;
 
+        actualLicenseKey = optionsConfigData.LicenseKey;
+        LicenseKey = actualLicenseKey; // gets handled anyway 
+        #endregion
         ApplyCommand = new FastCommand((o) => ApplyEvent?.Invoke(o, EventArgs.Empty));
+        ApplyEvent += SaveOptionConfigurationOnApply;
+
+        OnOptionsWindowCloseCommand = new FastCommand(OnOptionsWindowClose);
+
+        LicenseKeyVisibilityToggleCommand = new FastCommand(ToggleLicenseKeyVisibility);
+        LicenseKeyVisibilityToggleContent = "Lizensschlüssel anzeigen";
+        constructed = true;
     }
 
     public void Filter(ref List<Part> parts)
     {
         if (FilterAvailabilityMoreThen.IsChecked)
         {
-            PartFilters.FilterAvailableMoreThen(parts, int.Parse(FilterAvailabilityMoreThen.AttributeName));
+            if (int.TryParse(FilterAvailabilityMoreThen.AttributeName, out int moreThen))
+            {
+                PartFilters.FilterAvailableMoreThen(parts, moreThen);
+            }
         }
 
         if (FilterAvailabilityLessThen.IsChecked)
         {
-            PartFilters.FilterAvailableLessThen(parts, int.Parse(FilterAvailabilityMoreThen.AttributeName));
+            if (int.TryParse(FilterAvailabilityLessThen.AttributeName, out int lessThen))
+            {
+                PartFilters.FilterAvailableMoreThen(parts, lessThen);
+            }
         }
 
         if (FilterPriceLessThenAt.IsChecked)
         {
-            PartFilters.FilterLessThenPriceAt(parts, float.Parse(FilterPriceLessThenAt.AttributeName), int.Parse(PriceLessThenAtAmount));
+            if (float.TryParse(FilterPriceLessThenAt.AttributeName, out float price) && int.TryParse(PriceLessThenAtAmount, out int lessAmount))
+            {
+                PartFilters.FilterLessThenPriceAt(parts, price, lessAmount);
+            }
         }
-
 
     }
 
@@ -111,5 +150,70 @@ public class OptionsWindowViewModel : ViewModelBase
         }
     }
 
+    public string GetLicenseKey()
+    {
+        return actualLicenseKey;
+    }
+
+    private void OnPropertyChangedAndSaveCallback(string propertyName)
+    {
+        OnPropertyChanged(propertyName);
+        SaveOptionsConfiguration();
+    }
+
+    private void SaveOptionConfigurationOnApply(object? o, EventArgs e)
+    {
+        SaveOptionsConfiguration();
+    }
+
+    private void SaveOptionsConfiguration()
+    {
+        if (!constructed) return;
+
+        OptionsConfigData optionsConfigData = new();
+        optionsConfigData.AttributesChecked = Attributes.ToList();
+        optionsConfigData.SortsChecked = SortsDpd.ToList();
+
+        optionsConfigData.FilterAvailabilityLessThen = FilterAvailabilityLessThen;
+        optionsConfigData.FilterAvailabilityMoreThen = FilterAvailabilityMoreThen;
+        optionsConfigData.FilterPriceLessThenAt = FilterPriceLessThenAt;
+        optionsConfigData.PriceLessThenAtAmount = PriceLessThenAtAmount;
+        optionsConfigData.LicenseKey = actualLicenseKey;
+
+        try
+        {
+            optionsConfigData.ResultsInSearchPerAPI = int.Parse(ResultsInSearchPerAPI);
+        }
+        catch (FormatException) { }
+
+        LoadSaveSystem.SaveOptionsConfig(optionsConfigData);
+    }
+
+
+    private string HandleLicenseKeyInput(string input)
+    {
+        if (isLicenseKeyHidden)
+        {
+            return hiddenString;
+        }
+
+        if (input.Length > 16)
+            input = input.Substring(0, 16);
+
+        actualLicenseKey = input;
+        return input;
+    }
+
+    private void ToggleLicenseKeyVisibility(object? input)
+    {
+        isLicenseKeyHidden = !isLicenseKeyHidden;
+        LicenseKeyVisibilityToggleContent = isLicenseKeyHidden ? "Lizensschlüssel anzeigen" : "Lizensschlüssel verbergen";
+        LicenseKey = isLicenseKeyHidden ? hiddenString : actualLicenseKey;
+    }
+
+    private void OnOptionsWindowClose(object? input)
+    {
+        if (!isLicenseKeyHidden) ToggleLicenseKeyVisibility(null);
+    }
 }
 

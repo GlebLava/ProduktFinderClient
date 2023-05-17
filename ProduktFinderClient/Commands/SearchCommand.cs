@@ -38,6 +38,8 @@ namespace ProduktFinderClient.Commands
 
             if (parameter is string keyword)
             {
+                LoadSaveSystem.SaveSearchedKeyWord(keyword);
+
                 SearchBeganCallBack?.Invoke();
                 int numberSearchResults = 20;
 
@@ -61,7 +63,7 @@ namespace ProduktFinderClient.Commands
                         StatusHandle statusHandle = UserUpdateStatusHandleCreate();
 
                         ModuleTranslations.ModulesTranslation.TryGetKey(checkableString.AttributeName, out ModuleType moduleType);
-                        tasks.Add(RequestHandler.SearchWith(keyword, moduleType, numberSearchResults,
+                        tasks.Add(RequestHandler.SearchWith(optionsWindowViewModel.GetLicenseKey(), keyword, moduleType, numberSearchResults,
                             statusHandle, (x) => SearchFinishedCallBack(mainWindowViewModel, x), cancalationToken));
                     }
                 }
