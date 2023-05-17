@@ -129,6 +129,16 @@ namespace ProduktFinderClient.Models
                 statusHandle.ColorRight = Colors.Green;
                 return results;
             }
+            catch (TaskCanceledException)
+            {
+                UpdateUserError(statusHandle, "Suche abbgebrochen", keyword);
+                return null;
+            }
+            catch (OperationCanceledException)
+            {
+                UpdateUserError(statusHandle, "Suche abbgebrochen", keyword);
+                return null;
+            }
             catch (HttpRequestException)
             {
                 UpdateUserError(statusHandle, "Verbindung zum Server fehlgeschlagen. Versuchen Sie es später neu", keyword);
