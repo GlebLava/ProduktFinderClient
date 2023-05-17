@@ -120,7 +120,7 @@ namespace ProduktFinderClient.ViewModels
             Bedarf = new ObservableCollection<StringWithCommand>();
             H_Artikelnummer = new ObservableCollection<StringWithCommand>();
             HCS_Artikelnummer = new ObservableCollection<StringWithCommand>();
-            ExcelOutput = true;
+            ExcelOutput = false;
 
             for (int i = 0; i < csvin.headers.Length; i++)
             {
