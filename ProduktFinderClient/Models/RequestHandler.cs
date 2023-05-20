@@ -7,6 +7,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Media;
 
 namespace ProduktFinderClient.Models;
@@ -16,8 +17,8 @@ public class RequestHandler
     private static readonly HttpClientQueue _httpQueue = new(10);
     private static readonly HttpClient _authClient;
     //private static readonly string _baseUrl = @"https://77.24.97.93:7556/";
-    //private static readonly string _baseUrl = @"https://localhost:7321/";
-    private static readonly string _baseUrl = @"https://192.168.178.21:7320/";
+    private static readonly string _baseUrl = @"https://localhost:7321/";
+    //private static readonly string _baseUrl = @"https://192.168.178.21:7320/";
     private static readonly string _getPartsEndpoint = @"getParts/";
     private static readonly string _authorizeEndpoint = @"pfAuth/";
     private static readonly string _unregisterEndpoint = @"pfUnregisterAuth/";
@@ -79,6 +80,7 @@ public class RequestHandler
                     if (e.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                     {
                         UpdateUserError(statusHandle, "Linzensschlüssel ist nicht gültig. Man kann den Lizensschlüssen in den Optionen finden", keyword);
+                        MessageBox.Show("Linzensschlüssel ist nicht gültig. Man kann den Lizensschlüssen in den Optionen finden");
                         return null;
                     }
 
@@ -86,6 +88,8 @@ public class RequestHandler
                     {
                         UpdateUserError(statusHandle, "Ein unter diesem Lizenschlüssel registrierter Produktfinder ist schon offen." +
                                                       " Um diesen benutzen zu können müssen Sie den anderen erstmal schließen", keyword);
+                        MessageBox.Show("Ein unter diesem Lizenschlüssel registrierter Produktfinder ist schon offen." +
+                                                      " Um diesen benutzen zu können müssen Sie den anderen erstmal schließen");
                         return null;
                     }
 

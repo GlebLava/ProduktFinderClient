@@ -11,6 +11,7 @@ namespace ProduktFinderClient.Models.ErrorLogging
     {
         private static readonly List<string> logNames = new() { "log1.txt", "log2.txt", "log3.txt" };
 
+
         public static void LogError(Exception e, string keywordSearched)
         {
             MessageBox.Show("Es ist ein Fehler aufgetreten. Dieser wurde notiert. Entweder den versuchten Vorgang nochmal wiederholen oder das Program neustarten :)" +
