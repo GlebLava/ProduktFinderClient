@@ -41,7 +41,13 @@ public partial class App : Application
         // it would not be waited upon. Because this is a very important call, I explicitly put it here
         // If a somebody knows why, they can put it back into RequestHandler and have it to be called through a
         // subscription
-        RequestHandler.Unregister().Wait();
+        _ = RequestHandler.Unregister();
+        // Another problem
+        // For some reason the httpClient in RequestHandler blocks when called from OnExit with .Wait()
+        // This might be because it and the UI thread deadlock each other? Not sure. Anyways we give it 
+        // 2 Seconds to unregister our authKey. This should be enough time
+        Task.Delay(2000).Wait();
+
         base.OnExit(e);
     }
 
