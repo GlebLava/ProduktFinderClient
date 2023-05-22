@@ -10,8 +10,9 @@ namespace ProduktFinderClient.Models;
 public static class LoadSaveSystem
 {
     //Have to be on top
-    private static string savingDirPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ProduktFinder");
-    private static string configFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ProduktFinder", "ConfigFile.json");
+    private static readonly string savingDirPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ProduktFinder");
+    private static readonly string configFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ProduktFinder", "ConfigFile.json");
+    private static readonly string authKeyFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ProduktFinder", "authKey.pk");
 
 
     public static ConfigData configData = LoadData();
@@ -37,7 +38,6 @@ public static class LoadSaveSystem
         }
         else
         {
-
             string jsonConfigData = File.ReadAllText(appdataPath);
             data = JsonSerializer.Deserialize<ConfigData>(jsonConfigData)!;
 
@@ -46,7 +46,6 @@ public static class LoadSaveSystem
                 data = new ConfigData();
                 File.WriteAllText(appdataPath, JsonSerializer.Serialize(data));
             }
-
         }
 
         return data;
@@ -142,6 +141,22 @@ public static class LoadSaveSystem
         configData.OptionsConfigData = data;
         SaveData(configData);
     }
+
+    public static void SaveAuthKey(string authKey)
+    {
+        File.WriteAllText(authKeyFilePath, authKey);
+    }
+
+    public static string LoadAuthKey()
+    {
+        if (!File.Exists(authKeyFilePath))
+        {
+            SaveAuthKey("");
+        }
+
+        return File.ReadAllText(authKeyFilePath);
+    }
+
 }
 
 

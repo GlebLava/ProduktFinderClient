@@ -183,6 +183,7 @@ namespace ProduktFinderClient
             MinimizeButton.Click += (s, e) => WindowState = WindowState.Minimized;
             MaximzeButton.Click += (s, e) => WindowState = WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
             CloseButton.Click += (s, e) => Close();
+
             FontSize = 20;
             InfoBoxFontSize = FontSize * 0.65;
             InfoBoxHeight = FontSize * 5;
