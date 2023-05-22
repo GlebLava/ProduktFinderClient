@@ -5,9 +5,11 @@ using System.Text;
 
 namespace ProduktFinderClient.DataTypes;
 
-class ColumnedTable
+
+public class ColumnedTable
 {
     public int ColumnLength { get { return columns.Length; } }
+    public int RowLength { get { return rows.Count; } }
 
     protected string[] columns;
     protected List<string[]> rows;
@@ -16,6 +18,25 @@ class ColumnedTable
     {
         this.columns = columns;
         rows = new List<string[]>();
+    }
+
+
+    public string GetHeader(int column)
+    {
+        return columns[column];
+    }
+    public string GetField(int row, int column)
+    {
+        if (column < columns.Length && row < rows.Count)
+        {
+
+            string[] array = rows[row];
+            return array[column];
+
+        }
+
+        else return " ";
+
     }
     public void AddNewRow(string[] row)
     {
@@ -49,6 +70,7 @@ class ColumnedTable
         }
 
         sb.Append("\n");
+
 
         for (int i = 0; i < rows.Count; i++)
         {
