@@ -110,8 +110,6 @@
         </Style.Triggers>
     </Style>
 
-
-
     <Style TargetType="Button" x:Key="WindowChromeFunctionalButton">
         <Setter Property="Background" Value="{StaticResource WindowChromeFunctionalColor}"/>
         <Setter Property="Foreground" Value="{StaticResource ToolbarForeGroundColor}"/>
@@ -238,6 +236,15 @@
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
+    </Style>
+
+    <Style TargetType="{x:Type RadioButton}" x:Key="DefaultRadioButton">
+        <Setter Property="Foreground" Value="{StaticResource ToolbarForeGroundColor}"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+    </Style>
+
+    <Style TargetType="{x:Type Label}" x:Key="DefaultLabel">
+        <Setter Property="Foreground" Value="{StaticResource ToolbarForeGroundColor}"/>
     </Style>
 
 

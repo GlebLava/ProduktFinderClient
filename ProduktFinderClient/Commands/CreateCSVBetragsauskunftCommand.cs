@@ -21,6 +21,7 @@ namespace ProduktFinderClient.Commands
     {
         Func<StatusHandle> UserUpdateStatusHandleCreate;
         MainWindowViewModel mainWindowViewModel;
+        OptionsWindowViewModel optionsWindowViewModel;
         Func<string, string> RegexKeywordTransform;
         Func<CommandParams> GetCommandParamsFunc;
 
@@ -52,10 +53,11 @@ namespace ProduktFinderClient.Commands
         }
 
         public CreateCSVBetragsauskunftCommand(string normalText, string cancelText, Action<string> SetButtonContent,
-            MainWindowViewModel mainWindowViewModel, CSVObject csv, Func<StatusHandle> UserUpdateStatusHandleCreate, Func<string, string> RegexKeywordTransform, Func<CommandParams> GetCommandParamsFunc)
+            MainWindowViewModel mainWindowViewModel, OptionsWindowViewModel optionsWindowViewModel, CSVObject csv, Func<StatusHandle> UserUpdateStatusHandleCreate, Func<string, string> RegexKeywordTransform, Func<CommandParams> GetCommandParamsFunc)
             : base(normalText, cancelText, SetButtonContent)
         {
             this.mainWindowViewModel = mainWindowViewModel;
+            this.optionsWindowViewModel = optionsWindowViewModel;
             this.UserUpdateStatusHandleCreate = UserUpdateStatusHandleCreate;
             this.RegexKeywordTransform = RegexKeywordTransform;
             this.csv = csv;
@@ -285,7 +287,7 @@ namespace ProduktFinderClient.Commands
         {
             StatusHandle statusHandle = UserUpdateStatusHandleCreate();
 
-            List<Part>? answers = await RequestHandler.SearchWith(keyword, moduleType, 3, statusHandle, cancellationToken);
+            List<Part>? answers = await RequestHandler.SearchWith(optionsWindowViewModel.GetLicenseKey(), keyword, moduleType, 3, statusHandle, cancellationToken);
             if (answers is null || answers.Count == 0)
                 return;
 

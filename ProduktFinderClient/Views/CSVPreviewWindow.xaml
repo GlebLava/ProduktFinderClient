@@ -181,6 +181,7 @@
                                         Margin="5"/>
                     </Button>
 
+                    <!--
                     <Label Content="Als Excel ausgeben"
                            Foreground="{StaticResource ToolbarForeGroundColor}"
                            VerticalAlignment="Center"
@@ -190,6 +191,7 @@
                               IsChecked="{Binding ExcelOutput}">
                         
                     </CheckBox>
+                    -->
                     
                     
                 </StackPanel>

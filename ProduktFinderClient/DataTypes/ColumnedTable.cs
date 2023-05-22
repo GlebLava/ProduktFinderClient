@@ -1,8 +1,10 @@
-﻿using System;
+﻿using ProduktFinderClient.Models;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace ProduktFinderClient.DataTypes;
+
 
 public class ColumnedTable
 {
@@ -11,7 +13,6 @@ public class ColumnedTable
 
     protected string[] columns;
     protected List<string[]> rows;
-
 
     public ColumnedTable(string[] columns)
     {
@@ -69,6 +70,7 @@ public class ColumnedTable
         }
 
         sb.Append("\n");
+
 
         for (int i = 0; i < rows.Count; i++)
         {

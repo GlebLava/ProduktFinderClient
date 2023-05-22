@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace ProduktFinderClient.Commands
 {
@@ -38,6 +39,8 @@ namespace ProduktFinderClient.Commands
 
             if (parameter is string keyword)
             {
+                LoadSaveSystem.SaveSearchedKeyWord(keyword);
+
                 SearchBeganCallBack?.Invoke();
                 int numberSearchResults = 20;
 
@@ -52,7 +55,7 @@ namespace ProduktFinderClient.Commands
                 /// What happens is a translation from the String in the LieferantenDrop down
                 /// to an Enum of Module Type using the BidiDict Filter.ModulesTranslation
 
-                List<Task> tasks = new List<Task>();
+                List<Task> tasks = new();
 
                 foreach (var checkableString in mainWindowViewModel.Lieferanten)
                 {
@@ -61,10 +64,17 @@ namespace ProduktFinderClient.Commands
                         StatusHandle statusHandle = UserUpdateStatusHandleCreate();
 
                         ModuleTranslations.ModulesTranslation.TryGetKey(checkableString.AttributeName, out ModuleType moduleType);
-                        tasks.Add(RequestHandler.SearchWith(keyword, moduleType, numberSearchResults,
+                        tasks.Add(RequestHandler.SearchWith(optionsWindowViewModel.GetLicenseKey(), keyword, moduleType, numberSearchResults,
                             statusHandle, (x) => SearchFinishedCallBack(mainWindowViewModel, x), cancalationToken));
                     }
                 }
+
+
+                if (tasks.Count == 0)
+                {
+                    MessageBox.Show("Es sind keine Lieferanten ausgewählt!");
+                }
+
 
                 await Task.WhenAll(tasks);
             }

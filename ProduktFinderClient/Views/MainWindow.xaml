@@ -74,7 +74,6 @@
 
             </Grid>
 
-
             <!-- Toolbar -->
             <Border DockPanel.Dock="Top"
                     BorderThickness="0"
@@ -89,7 +88,7 @@
                         <TextBox
                         Name="KeywordSearchBox"
                         Margin="20, 0, 0, 0"
-                        Text="bc847c"
+                        Text="{Binding SearchInput}"
                         Width="220"
                         VerticalAlignment="Top"
                         Style="{StaticResource ToolbarTextBox}"
@@ -157,17 +156,9 @@
                     BorderBrush="{StaticResource ToolbarForeGroundColor}"
                     Background="{StaticResource AllBackGroundColor}">
 
-                <components:ColumnBasedGrid x:Name="MainColumnBasedGrid"
-           
-                                            SpecifiedGrid="{Binding SpecifiedGrid, Mode=TwoWay,
-                                                UpdateSourceTrigger=PropertyChanged}"
-                                        
-                                            ColumnsVisible="{Binding HeadersActive, Mode=TwoWay,
-                                                UpdateSourceTrigger=PropertyChanged}"
-                                        
+                <components:PartsGrid x:Name="MainPartsGrid"
                                             FontSize="20"
                                             Margin="10"/>
-
             </Border>
 
         </DockPanel>

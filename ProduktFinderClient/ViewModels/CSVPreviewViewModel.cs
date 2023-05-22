@@ -114,13 +114,13 @@ namespace ProduktFinderClient.ViewModels
         #endregion
 
         CSVObject csv;
-        public CSVPreviewViewModel(string inputFile, CSVObject csvin, MainWindowViewModel mainWindowViewModel, Func<StatusHandle> UserUpdateStatusHandleCreate)
+        public CSVPreviewViewModel(string inputFile, CSVObject csvin, MainWindowViewModel mainWindowViewModel, OptionsWindowViewModel optionsWindowViewModel, Func<StatusHandle> UserUpdateStatusHandleCreate)
         {
             csv = csvin;
             Bedarf = new ObservableCollection<StringWithCommand>();
             H_Artikelnummer = new ObservableCollection<StringWithCommand>();
             HCS_Artikelnummer = new ObservableCollection<StringWithCommand>();
-            ExcelOutput = true;
+            ExcelOutput = false;
 
             for (int i = 0; i < csvin.headers.Length; i++)
             {
@@ -155,7 +155,7 @@ namespace ProduktFinderClient.ViewModels
             });
 
             BedarfsauskunftsCommand = new CreateCSVBetragsauskunftCommand("Starten", "Abbrechen", s => ButtonContent = s,
-                mainWindowViewModel, csvin, UserUpdateStatusHandleCreate, TransformString, CommandParams);
+                mainWindowViewModel, optionsWindowViewModel, csvin, UserUpdateStatusHandleCreate, TransformString, CommandParams);
 
             OnChangePreviewGrid();
 

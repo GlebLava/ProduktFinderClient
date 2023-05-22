@@ -16,10 +16,12 @@ namespace ProduktFinderClient.Commands
     {
 
         MainWindowViewModel mainWindowViewModel;
+        OptionsWindowViewModel optionsWindowViewModel;
         Func<StatusHandle> UserUpdateStatusHandleCreate;
-        public OpenCSVPreviewCommand(MainWindowViewModel mainWindowViewModel, Func<StatusHandle> UserUpdateStatusHandleCreate)
+        public OpenCSVPreviewCommand(MainWindowViewModel mainWindowViewModel, OptionsWindowViewModel optionsWindowViewModel, Func<StatusHandle> UserUpdateStatusHandleCreate)
         {
             this.mainWindowViewModel = mainWindowViewModel;
+            this.optionsWindowViewModel = optionsWindowViewModel;
             this.UserUpdateStatusHandleCreate = UserUpdateStatusHandleCreate;
         }
 
@@ -32,7 +34,7 @@ namespace ProduktFinderClient.Commands
                 openfileDialog.Filter = "CSV Files (*.csv)|*.csv";
                 if (openfileDialog.ShowDialog() == true)
                 {
-                    CSVPreviewViewModel context = new CSVPreviewViewModel(Path.GetFileName(openfileDialog.FileName), CSVParser.ParseCSVFile(openfileDialog.FileName), mainWindowViewModel, UserUpdateStatusHandleCreate);
+                    CSVPreviewViewModel context = new CSVPreviewViewModel(Path.GetFileName(openfileDialog.FileName), CSVParser.ParseCSVFile(openfileDialog.FileName), mainWindowViewModel, optionsWindowViewModel, UserUpdateStatusHandleCreate);
                     CSVPreviewWindow window = new CSVPreviewWindow
                     {
                         DataContext = context
