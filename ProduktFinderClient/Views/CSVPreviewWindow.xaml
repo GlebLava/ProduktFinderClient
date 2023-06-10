@@ -155,6 +155,22 @@
 
                 <DockPanel LastChildFill="True" Grid.Row="1" Grid.Column="1">
 
+                    <ListView DockPanel.Dock="Top"
+                              ItemsSource="{Binding Errors}"
+                              MaxHeight="50"
+                              VirtualizingPanel.IsVirtualizing="False"
+                              Background="Transparent"
+                              BorderThickness="0">
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Background="Transparent"
+                                           VerticalAlignment="Center"
+                                           Text="{Binding}"
+                                           Foreground="Red"/>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+
                     <Label Content="Preview Output:"
                            Foreground="{StaticResource ToolbarForeGroundColor}"
                            DockPanel.Dock="Top"/>
