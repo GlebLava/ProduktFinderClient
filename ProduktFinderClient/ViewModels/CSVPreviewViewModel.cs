@@ -252,11 +252,11 @@ public class CSVPreviewViewModel : ViewModelBase
             {
                 if (int.TryParse(csv.GetField(i, bedarfIndex), out int bedarf))
                 {
-                    if (bedarf > 0)
-                        continue;
-
-                    errors.Add($"Zeile {i}, der Bedarf darf nicht negativ oder Null sein");
-                    canExecute = false;
+                    if (bedarf <= 0)
+                    {
+                        errors.Add($"Zeile {i}, der Bedarf darf nicht negativ oder Null sein");
+                        canExecute = false;
+                    }
                 }
                 else
                 {
