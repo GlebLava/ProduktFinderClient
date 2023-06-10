@@ -23,6 +23,7 @@ namespace ProduktFinderClient.Components
     public partial class PartsGrid : UserControl
     {
         public static readonly List<string> COLUMN_TITLES = new() { "Produkt Bild", "Lieferant", "Hersteller", "Hersteller-TeileNr.", "Beschreibung", "Anzahl Verfügbar", "Mengenpreise" };
+        private bool[] activeColumns = new bool[] { true, true, true, true, true, true, true };
 
         readonly Style headerBorderStyle;
         readonly Style headerTextStyle;
@@ -50,10 +51,12 @@ namespace ProduktFinderClient.Components
             Debug.Assert(columnsVisible is not null);
             Debug.Assert(columnsVisible.Length == COLUMN_TITLES.Count);
 
+            activeColumns = columnsVisible;
+
             for (int i = 0; i < columnsVisible.Length; i++)
             {
-                //Microsoft handles collapses internally the same way 0
-                MainGrid.ColumnDefinitions.Insert(i, new ColumnDefinition() { Width = columnsVisible[i] ? GridLength.Auto : new GridLength(0, GridUnitType.Star) });
+                //Microsoft handles collapses internally the same way
+                MainGrid.ColumnDefinitions[i].Width = columnsVisible[i] ? GridLength.Auto : new GridLength(0);
             }
 
         }
@@ -85,27 +88,31 @@ namespace ProduktFinderClient.Components
         public void Clear()
         {
             MainGrid.RowDefinitions.Clear();
-            MainGrid.ColumnDefinitions.Clear();
             MainGrid.Children.Clear();
+
+            MainGrid.ColumnDefinitions.Clear();
             InitColumns();
         }
 
         private void InitColumns()
         {
+            Debug.Assert(COLUMN_TITLES.Count == activeColumns.Length);
+
             MainGrid.RowDefinitions.Add(new RowDefinition());
 
-            foreach (string title in COLUMN_TITLES)
+            for (int i = 0; i < COLUMN_TITLES.Count; i++)
             {
-                MainGrid.ColumnDefinitions.Add(new ColumnDefinition() { Width = GridLength.Auto });
+                MainGrid.ColumnDefinitions.Add(new ColumnDefinition() { Width = activeColumns[i] ? GridLength.Auto : new GridLength(0) });
 
                 Border border = new() { Style = headerBorderStyle };
-                TextBox textBox = new() { Style = headerTextStyle, Text = title };
+                TextBox textBox = new() { Style = headerTextStyle, Text = COLUMN_TITLES[i] };
                 border.Child = textBox;
 
                 MainGrid.Children.Add(border);
                 Grid.SetRow(border, 0);
                 Grid.SetColumn(border, MainGrid.ColumnDefinitions.Count - 1);
             }
+
         }
 
         private void AddBaseTextBoxToGrid(string text, int column)
