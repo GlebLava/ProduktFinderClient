@@ -23,6 +23,7 @@ public class RequestHandler
     private static readonly string _authorizeEndpoint = @"pfAuth/";
     private static readonly string _unregisterEndpoint = @"pfUnregisterAuth/";
 
+    private static string lastUsedValidLicenseKey = "";
     private static string authKey = "";
     private static SemaphoreSlim authSemaphore = new(1);
 
@@ -37,9 +38,9 @@ public class RequestHandler
         authKey = LoadSaveSystem.LoadAuthKey();
     }
 
-    public static async Task SearchWith(string licenseKey, string keyword, ModuleType api, int numberOfResultsPerAPI, StatusHandle statusHandle, Action<List<Part>?> OnSearchFinishedCallback, CancellationToken cancellationToken)
+    public static async Task SearchWith(string licenseKey, string keyword, ModuleType api, int numberOfResultsPerAPI, StatusHandle statusHandle, Action<List<Part>?> OnSearchFinishedCallback, CancellationToken cancellationToken, Action OnWrongLicenseKeyCallback)
     {
-        var result = await SearchWith(licenseKey, keyword, api, numberOfResultsPerAPI, statusHandle, cancellationToken);
+        var result = await SearchWith(licenseKey, keyword, api, numberOfResultsPerAPI, statusHandle, cancellationToken, OnWrongLicenseKeyCallback);
 
         if (!cancellationToken.IsCancellationRequested)
             OnSearchFinishedCallback(result);
@@ -56,7 +57,7 @@ public class RequestHandler
     /// <param name="statusHandle"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public static async Task<List<Part>?> SearchWith(string licenseKey, string keyword, ModuleType api, int numberOfResultsPerAPI, StatusHandle statusHandle, CancellationToken cancellationToken)
+    public static async Task<List<Part>?> SearchWith(string licenseKey, string keyword, ModuleType api, int numberOfResultsPerAPI, StatusHandle statusHandle, CancellationToken cancellationToken, Action OnWrongLicenseKeyCallback)
     {
         try
         {
@@ -66,6 +67,17 @@ public class RequestHandler
             HttpResponseMessage response;
             try
             {
+                // If a valid licenseKey was used, and it is changed to an invalid one, we want the user to notice immeadiatly
+                // else everything would still work until the authKey runs out
+                if (lastUsedValidLicenseKey != licenseKey)
+                {
+                    // We need to try to unregister because if user changes licenseKey from valid to invalid, we get a new one while the authkey is not updated.
+                    // If we switch back from invalid to the old valid one a new authkey will be requested. Although the old authkey is still regsitered. So the server thinks
+                    // that two instances are open
+                    await Unregister();
+                    throw new HttpRequestException("");
+                }
+
                 SearchWithPostParams input = new() { AuthKey = authKey, KeyWord = keyword, MaxPart = numberOfResultsPerAPI, ModuleType = api };
                 response = await GetPostResponse(_baseUrl + _getPartsEndpoint, input, cancellationToken);
             }
@@ -79,8 +91,8 @@ public class RequestHandler
                 {
                     if (e.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                     {
-                        UpdateUserError(statusHandle, "Linzensschlüssel ist nicht gültig. Man kann den Lizensschlüssen in den Optionen finden", keyword);
-                        MessageBox.Show("Linzensschlüssel ist nicht gültig. Man kann den Lizensschlüssen in den Optionen finden");
+                        UpdateUserError(statusHandle, "Lizensschlüssel ist nicht gültig. Man kann den Lizensschlüssen in den Optionen finden", keyword);
+                        OnWrongLicenseKeyCallback?.Invoke();
                         return null;
                     }
 
@@ -188,6 +200,7 @@ public class RequestHandler
             response.EnsureSuccessStatusCode();
             authKey = JsonSerializer.Deserialize<AuthResponse>(await response.Content.ReadAsStringAsync())!.AuthKey;
             LoadSaveSystem.SaveAuthKey(authKey);
+            lastUsedValidLicenseKey = licenseKey;
         }
         finally
         {

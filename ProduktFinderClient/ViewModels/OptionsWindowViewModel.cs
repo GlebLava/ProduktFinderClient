@@ -2,6 +2,7 @@
 using ProduktFinderClient.Components;
 using ProduktFinderClient.DataTypes;
 using ProduktFinderClient.Models;
+using ProduktFinderClient.Views;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -164,6 +165,10 @@ public class OptionsWindowViewModel : ViewModelBase
     private void SaveOptionConfigurationOnApply(object? o, EventArgs e)
     {
         SaveOptionsConfiguration();
+        if (!isLicenseKeyHidden)
+        {
+            ToggleLicenseKeyVisibility(null);
+        }
     }
 
     private void SaveOptionsConfiguration()
@@ -215,5 +220,14 @@ public class OptionsWindowViewModel : ViewModelBase
     {
         if (!isLicenseKeyHidden) ToggleLicenseKeyVisibility(null);
     }
+
+    public void OnWrongLicenseKeyWhileSearching()
+    {
+        LicenseKeyPopup window = new();
+        window.DataContext = this;
+        window.Show();
+    }
+
+
 }
 

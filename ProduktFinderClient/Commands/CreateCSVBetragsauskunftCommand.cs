@@ -284,7 +284,7 @@ public class CreateCSVBetragsauskunftCommand : AsyncCancelCommandBase
     {
         StatusHandle statusHandle = UserUpdateStatusHandleCreate();
 
-        List<Part>? answers = await RequestHandler.SearchWith(optionsWindowViewModel.GetLicenseKey(), keyword, moduleType, 3, statusHandle, cancellationToken);
+        List<Part>? answers = await RequestHandler.SearchWith(optionsWindowViewModel.GetLicenseKey(), keyword, moduleType, 3, statusHandle, cancellationToken, optionsWindowViewModel.OnWrongLicenseKeyWhileSearching);
         if (answers is null || answers.Count == 0)
             return;
 

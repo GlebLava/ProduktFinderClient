@@ -15,12 +15,18 @@
     <Compile Update="Components\StatusBlock.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="Views\LicenseKeyPopup.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Page Update="Components\PartsGrid.xaml">
       <SubType>Designer</SubType>
     </Page>
     <Page Update="Components\StatusBlock.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Views\LicenseKeyPopup.xaml">
       <SubType>Designer</SubType>
     </Page>
     <Page Update="Views\MainWindow.xaml">
