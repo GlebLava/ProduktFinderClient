@@ -147,6 +147,8 @@ namespace ProduktFinderClient.Views
             MinimizeButton.Click += (s, e) => WindowState = WindowState.Minimized;
             MaximzeButton.Click += (s, e) => WindowState = WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
             CloseButton.Click += (s, e) => Close();
+
+            App.MainWindowCloseEvent += (s, e) => { Close(); };
         }
 
         private void Button_ClickBedarf(object sender, RoutedEventArgs e)
