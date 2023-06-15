@@ -24,5 +24,7 @@ public class OptionsConfigData
     public CheckableStringObject FilterPriceLessThenAt { get; set; } = new CheckableStringObject() { isChecked = false, AttributeName = "0.0" };
     public string PriceLessThenAtAmount { get; set; } = "0";
     public string LicenseKey { get; set; } = "0000000000000000";
+
+    public bool LicenseKeyWindowPopupEnabled { get; set; } = true;
 }
 

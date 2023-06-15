@@ -190,6 +190,16 @@
                             </Button>
                         </StackPanel>
 
+                        <CheckBox Style="{StaticResource ToolBarCheckBoxLeftWithContentPresenter}"
+                                  Margin="0,20,0,0"
+                                  HorizontalAlignment="Left"
+                                  IsChecked="{Binding LicenseKeyWindowPopupEnabled}">
+                            <TextBlock Text="Lizenschlüssel Popup anzeigen, falls ein falscher Lizensschlüssel benutzt wird"
+                                       TextWrapping="Wrap"
+                                       Foreground="{StaticResource ToolbarForeGroundColor}" 
+                                       HorizontalAlignment="Stretch"/>
+                        </CheckBox>
+
                     </StackPanel>
 
                 </ScrollViewer>

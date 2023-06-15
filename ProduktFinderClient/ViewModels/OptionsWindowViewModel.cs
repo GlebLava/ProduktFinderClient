@@ -77,6 +77,19 @@ public class OptionsWindowViewModel : ViewModelBase
     }
     private bool isLicenseKeyHidden = true;
     private string hiddenString = "▬▬▬▬▬▬▬▬▬▬";
+
+    public bool licenseKeyWindowPopupEnabled = true;
+    public bool LicenseKeyWindowPopupEnabled
+    {
+        get { return licenseKeyWindowPopupEnabled; }
+        set { licenseKeyWindowPopupEnabled = value; OnPropertyChanged(nameof(LicenseKeyWindowPopupEnabled)); SaveOptionsConfiguration(); }
+    }
+
+    public bool LicenseKeyWindowPopupDisabled
+    {
+        get { return !licenseKeyWindowPopupEnabled; }
+        set { LicenseKeyWindowPopupEnabled = !value; OnPropertyChanged(nameof(LicenseKeyWindowPopupDisabled)); SaveOptionsConfiguration(); }
+    }
     #endregion
 
     bool constructed = false;
@@ -101,7 +114,9 @@ public class OptionsWindowViewModel : ViewModelBase
 
         actualLicenseKey = optionsConfigData.LicenseKey;
         LicenseKey = actualLicenseKey; // gets handled anyway 
+        LicenseKeyWindowPopupEnabled = optionsConfigData.LicenseKeyWindowPopupEnabled;
         #endregion
+
         ApplyCommand = new FastCommand((o) => ApplyEvent?.Invoke(o, EventArgs.Empty));
         ApplyEvent += SaveOptionConfigurationOnApply;
 
@@ -184,6 +199,7 @@ public class OptionsWindowViewModel : ViewModelBase
         optionsConfigData.FilterPriceLessThenAt = FilterPriceLessThenAt;
         optionsConfigData.PriceLessThenAtAmount = PriceLessThenAtAmount;
         optionsConfigData.LicenseKey = actualLicenseKey;
+        optionsConfigData.LicenseKeyWindowPopupEnabled = LicenseKeyWindowPopupEnabled;
 
         try
         {
@@ -223,9 +239,12 @@ public class OptionsWindowViewModel : ViewModelBase
 
     public void OnWrongLicenseKeyWhileSearching()
     {
-        LicenseKeyPopup window = new();
-        window.DataContext = this;
-        window.Show();
+        if (LicenseKeyWindowPopupEnabled)
+        {
+            LicenseKeyPopup window = new();
+            window.DataContext = this;
+            window.Show();
+        }
     }
 
 

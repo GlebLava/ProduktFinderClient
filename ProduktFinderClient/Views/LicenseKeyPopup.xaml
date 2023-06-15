@@ -5,9 +5,10 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ProduktFinderClient.Views"
         mc:Ignorable="d"
-        Title="LicenseKeyPopup" Height="300" Width="500"
+        Title="LicenseKeyPopup" Height="350" Width="500"
         WindowStyle="None"
-        AllowsTransparency="True">
+        AllowsTransparency="True"
+        SizeToContent="WidthAndHeight">
 
     <WindowChrome.WindowChrome>
         <WindowChrome CaptionHeight="35"/>
@@ -49,7 +50,8 @@
                    Margin="20"
                    DockPanel.Dock="Top"/>
             <StackPanel Margin="20"
-                        DockPanel.Dock="Top">
+                        DockPanel.Dock="Top"
+                        Orientation="Vertical">
                 <TextBlock Text="Lizensschlüssel:"
                                        Margin="0,10,0,0"
                                        Style="{StaticResource OptionsHeaderTextblock}"/>
@@ -61,7 +63,23 @@
                                     Command="{Binding LicenseKeyVisibilityToggleCommand}">
                     </Button>
                 </StackPanel>
+
+                <Label Style="{StaticResource DefaultLabel}"
+                       Content="Den Lizensschlüssel findet man auch unter Optionen"
+                       Margin="0,10,0,0"/>
             </StackPanel>
+
+            <CheckBox DockPanel.Dock="Left"
+                                  Style="{StaticResource ToolBarCheckBoxLeftWithContentPresenter}"
+                                  Margin="20,20,0,10"
+                                  HorizontalAlignment="Left"
+                                  IsChecked="{Binding LicenseKeyWindowPopupDisabled}">
+                <TextBlock Text="Dieses Fenster nicht mehr anzeigen"
+                           TextWrapping="Wrap"
+                           Foreground="{StaticResource ToolbarForeGroundColor}" 
+                           HorizontalAlignment="Stretch"/>
+            </CheckBox>
+
 
             <Button DockPanel.Dock="Right"
                     Margin="10"
@@ -70,11 +88,11 @@
                     Height="40"
                     Click="Anwenden_Button_Click">
 
-                <ContentControl Content="Anwenden"
+                    <ContentControl Content="Anwenden"
                                         Margin="4"
                                         VerticalAlignment="Center"/>
-            </Button>
-
+                </Button>
+            
 
 
         </DockPanel>
