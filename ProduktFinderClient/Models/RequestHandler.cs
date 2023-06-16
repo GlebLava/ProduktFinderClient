@@ -3,6 +3,7 @@ using ProduktFinderClient.Models.ErrorLogging;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
@@ -112,7 +113,13 @@ public class RequestHandler
                 response = await GetPostResponse(_baseUrl + _getPartsEndpoint, input, cancellationToken); // Only try once after trying to authenticate
             }
 
+            long? length = response.Content.Headers.ContentLength;
+
             string answer = await response.Content.ReadAsStringAsync();
+
+            long decompressedLength = answer.ToCharArray().Length;
+
+
             ProduktFinderResponse? produktFinderResponse = JsonSerializer.Deserialize<ProduktFinderResponse>(answer, new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
@@ -168,7 +175,12 @@ public class RequestHandler
     private static async Task<HttpResponseMessage> GetPostResponse(string url, object input, CancellationToken cancellationToken)
     {
         HttpRequestMessage request = new(HttpMethod.Post, url);
+        request.Headers.AcceptEncoding.Add(new StringWithQualityHeaderValue("gzip"));
+        request.Headers.AcceptEncoding.Add(new StringWithQualityHeaderValue("br"));
+
         request.Content = new StringContent(JsonSerializer.Serialize(input), Encoding.UTF8, "application/json");
+
+
         HttpResponseMessage? response = await _httpQueue.EnqueueAsync(request, cancellationToken);
 
         if (response is null)
