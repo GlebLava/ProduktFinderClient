@@ -9,7 +9,8 @@
         Title="OptionsWindow" Height="600" Width="550"
         x:Name="Options"
         WindowStyle="None"
-        AllowsTransparency="True">
+        AllowsTransparency="True"
+        SizeToContent="WidthAndHeight">
 
     <WindowChrome.WindowChrome>
         <WindowChrome CaptionHeight="35"/>
@@ -199,6 +200,15 @@
                                        HorizontalAlignment="Stretch"/>
                         </CheckBox>
 
+                        <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                            <TextBlock Text="Schriftgröße" Foreground="{StaticResource ToolbarForeGroundColor}"/>
+                            <TextBlock x:Name="FontSizeTextBlock" Foreground="{StaticResource ToolbarForeGroundColor}" Text="20" Margin="5,0,0,0"/>
+                            <Button x:Name="IncreaseFontSize" Style="{StaticResource ToolbarButtonNotRound}" Content="+" Margin="5,0,0,0" MinWidth="15" Click="IncreaseFontSize_Click"/>
+                            <Button x:Name="DecreaseFontSize" Style="{StaticResource ToolbarButtonNotRound}" Content="-" Margin="5,0,0,0" MinWidth="15" Click="DecreaseFontSize_Click"/>
+
+
+                        </StackPanel>
+
                     </StackPanel>
 
                 </ScrollViewer>
@@ -207,7 +217,8 @@
                     <Button DockPanel.Dock="Right"
                                     Margin="10"
                                     Style="{StaticResource ToolbarButtonNotRound}"
-                                    Command="{Binding ApplyCommand}">
+                                    Command="{Binding ApplyCommand}"
+                                    Click="Anwenden_Click">
                         <ContentControl Content="Anwenden"
                                         Margin="4"
                                         VerticalAlignment="Center"/>

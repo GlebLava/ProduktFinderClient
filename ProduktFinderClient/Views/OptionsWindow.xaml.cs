@@ -17,6 +17,27 @@ namespace ProduktFinderClient.Views
         private BorderFixComponent borderFixComponent;
         private GlobalFontSizeComponent globalFontSizeComponent;
 
+        public OptionsWindow()
+        {
+            InitializeComponent();
+            borderFixComponent = new(this);
+            globalFontSizeComponent = new(this);
+
+            GlobalFontSizeComponent.OnGlobalFontSizeChanged += SetFontSizeInOptionsToGlobalFontSize;
+            SetFontSizeInOptionsToGlobalFontSize(null);
+
+            MinimizeButton.Click += (s, e) => WindowState = WindowState.Minimized;
+            MaximzeButton.Click += (s, e) => WindowState = WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
+            CloseButton.Click += (s, e) => Close();
+
+            App.MainWindowCloseEvent += (s, e) => { Close(); };
+        }
+
+        private void SetFontSizeInOptionsToGlobalFontSize(object? sender)
+        {
+            FontSizeTextBlock.Text = GlobalFontSizeComponent.GlobalFontSize.ToString();
+        }
+
 
         private void IntValidationTextBox(object sender, TextCompositionEventArgs e)
         {
@@ -84,17 +105,19 @@ namespace ProduktFinderClient.Views
                 textBox.Text = "50";
         }
 
-        public OptionsWindow()
+        private void IncreaseFontSize_Click(object sender, RoutedEventArgs e)
         {
-            InitializeComponent();
-            borderFixComponent = new(this);
-            globalFontSizeComponent = new(this);
+            GlobalFontSizeComponent.IncreaseGlobalFontSize(this);
+        }
 
-            MinimizeButton.Click += (s, e) => WindowState = WindowState.Minimized;
-            MaximzeButton.Click += (s, e) => WindowState = WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
-            CloseButton.Click += (s, e) => Close();
+        private void DecreaseFontSize_Click(object sender, RoutedEventArgs e)
+        {
+            GlobalFontSizeComponent.DecreaseGlobalFontSize(this);
+        }
 
-            App.MainWindowCloseEvent += (s, e) => { Close(); };
+        private void Anwenden_Button_Click(object sender, RoutedEventArgs e)
+        {
+            Close();
         }
     }
 }
