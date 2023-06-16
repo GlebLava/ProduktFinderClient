@@ -21,11 +21,13 @@ namespace ProduktFinderClient.Views
     public partial class CSVPreviewWindow : Window
     {
         private BorderFixComponent borderFixComponent;
+        private GlobalFontSizeComponent globalFontSizeComponent;
 
         public CSVPreviewWindow()
         {
             InitializeComponent();
             borderFixComponent = new(this);
+            globalFontSizeComponent = new(this);
 
             MinimizeButton.Click += (s, e) => WindowState = WindowState.Minimized;
             MaximzeButton.Click += (s, e) => WindowState = WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;

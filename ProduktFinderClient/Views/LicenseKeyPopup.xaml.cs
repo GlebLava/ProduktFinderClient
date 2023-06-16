@@ -20,18 +20,18 @@ namespace ProduktFinderClient.Views
     public partial class LicenseKeyPopup : Window
     {
         private BorderFixComponent borderFixComponent;
+        private GlobalFontSizeComponent globalFontSizeComponent;
 
         public LicenseKeyPopup()
         {
             InitializeComponent();
             borderFixComponent = new(this);
+            globalFontSizeComponent = new(this);
 
 
             MinimizeButton.Click += (s, e) => WindowState = WindowState.Minimized;
             MaximzeButton.Click += (s, e) => WindowState = WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
             CloseButton.Click += (s, e) => Close();
-
-            FontSize = 20;
         }
 
         private void Anwenden_Button_Click(object sender, RoutedEventArgs e)

@@ -10,6 +10,7 @@
                 <ResourceDictionary Source="MyResources/DarkScrollViewer.xaml"/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
-
     </Application.Resources>
+    
+    
 </Application>

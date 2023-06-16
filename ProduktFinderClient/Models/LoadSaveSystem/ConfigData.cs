@@ -8,9 +8,10 @@ public class ConfigData
     public string LastUsedSaveFile { get; set; } = "";
     public HashSet<ModuleType> SuppliersChecked { get; set; } = new HashSet<ModuleType>();
     public string LastSearchedForKeyWord { get; set; } = "bc847c";
-
     public OptionsConfigData OptionsConfigData { get; set; } = new();
 
+    public int GlobalFontSize { get; set; } = 20;
+    public int PartGridFontSize { get; set; } = 20;
 }
 
 public class OptionsConfigData
@@ -24,7 +25,6 @@ public class OptionsConfigData
     public CheckableStringObject FilterPriceLessThenAt { get; set; } = new CheckableStringObject() { isChecked = false, AttributeName = "0.0" };
     public string PriceLessThenAtAmount { get; set; } = "0";
     public string LicenseKey { get; set; } = "0000000000000000";
-
     public bool LicenseKeyWindowPopupEnabled { get; set; } = true;
 }
 

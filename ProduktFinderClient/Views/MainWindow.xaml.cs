@@ -1,4 +1,5 @@
-﻿using ProduktFinderClient.Views;
+﻿using ProduktFinderClient.Models;
+using ProduktFinderClient.Views;
 using System;
 using System.Runtime.InteropServices;
 using System.Windows;
@@ -60,21 +61,22 @@ namespace ProduktFinderClient
             set => SetValue(DependencyPropertyInfoBoxFontSize, value);
         }
 
-
         public MainWindow()
         {
             InitializeComponent();
             borderFixComponent = new(this);
-
+            GlobalFontSizeComponent.OnGlobalFontSizeChanged += OnGlobalFontSizeChanged;
 
             MinimizeButton.Click += (s, e) => WindowState = WindowState.Minimized;
             MaximzeButton.Click += (s, e) => WindowState = WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
             CloseButton.Click += (s, e) => Close();
 
-            FontSize = 20;
+            FontSize = GlobalFontSizeComponent.GlobalFontSize;
             InfoBoxFontSize = FontSize * 0.65;
             InfoBoxHeight = FontSize * 5;
             InfoBoxWidth = FontSize * 20;
+
+            MainPartsGrid.FontSize = LoadSaveSystem.LoadPartGridFontSize();
         }
 
         private void Window_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
@@ -90,28 +92,43 @@ namespace ProduktFinderClient
             }
             else if (Keyboard.IsKeyDown(Key.LeftCtrl))
             {
-
                 if (mouseOnTools)
                 {
-                    if (e.Delta < 0 && FontSize > 2)
-                        FontSize--;
-                    else if (FontSize < 50)
-                        FontSize++;
+                    if (e.Delta < 0)
+                    {
+                        GlobalFontSizeComponent.DecreaseGlobalFontSize(this);
+                    }
+                    else
+                    {
+                        GlobalFontSizeComponent.IncreaseGlobalFontSize(this);
+                    }
 
-                    InfoBoxHeight = FontSize * 5;
-                    InfoBoxWidth = FontSize * 20;
-                    InfoBoxFontSize = FontSize * 0.65;
                 }
                 else
                 {
-                    if (e.Delta < 0 && MainPartsGrid.FontSize > 2)
+                    if (e.Delta < 0 && MainPartsGrid.FontSize > GlobalFontSizeComponent.MIN_FONT_SIZE)
+                    {
                         MainPartsGrid.FontSize--;
-                    else if (MainPartsGrid.FontSize < 50)
+                        LoadSaveSystem.SavePartGridFontSize((int)MainPartsGrid.FontSize);
+                    }
+                    else if (MainPartsGrid.FontSize < GlobalFontSizeComponent.MAX_FONT_SIZE)
+                    {
                         MainPartsGrid.FontSize++;
+                        LoadSaveSystem.SavePartGridFontSize((int)MainPartsGrid.FontSize);
+                    }
                 }
 
                 e.Handled = true;
             }
+        }
+
+        private void OnGlobalFontSizeChanged(object? sender)
+        {
+            FontSize = GlobalFontSizeComponent.GlobalFontSize;
+
+            InfoBoxHeight = FontSize * 5;
+            InfoBoxWidth = FontSize * 20;
+            InfoBoxFontSize = FontSize * 0.65;
         }
 
         private void Tools_MouseEnter(object sender, MouseEventArgs e)

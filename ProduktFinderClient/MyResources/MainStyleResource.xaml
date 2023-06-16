@@ -326,6 +326,4 @@
     <Style TargetType="{x:Type Label}" x:Key="DefaultLabel">
         <Setter Property="Foreground" Value="{StaticResource ToolbarForeGroundColor}"/>
     </Style>
-
-
 </ResourceDictionary>

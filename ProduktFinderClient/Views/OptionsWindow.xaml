@@ -9,8 +9,7 @@
         Title="OptionsWindow" Height="600" Width="550"
         x:Name="Options"
         WindowStyle="None"
-        AllowsTransparency="True"
-        PreviewMouseWheel="Options_PreviewMouseWheel">
+        AllowsTransparency="True">
 
     <WindowChrome.WindowChrome>
         <WindowChrome CaptionHeight="35"/>

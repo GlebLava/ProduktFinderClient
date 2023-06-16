@@ -15,6 +15,7 @@ namespace ProduktFinderClient.Views
     public partial class OptionsWindow : Window
     {
         private BorderFixComponent borderFixComponent;
+        private GlobalFontSizeComponent globalFontSizeComponent;
 
 
         private void IntValidationTextBox(object sender, TextCompositionEventArgs e)
@@ -87,25 +88,13 @@ namespace ProduktFinderClient.Views
         {
             InitializeComponent();
             borderFixComponent = new(this);
+            globalFontSizeComponent = new(this);
 
             MinimizeButton.Click += (s, e) => WindowState = WindowState.Minimized;
             MaximzeButton.Click += (s, e) => WindowState = WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
             CloseButton.Click += (s, e) => Close();
 
             App.MainWindowCloseEvent += (s, e) => { Close(); };
-        }
-
-        private void Options_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
-        {
-            if (Keyboard.IsKeyDown(Key.LeftCtrl))
-            {
-                if (e.Delta < 0 && FontSize > 2)
-                    FontSize--;
-                else if (FontSize < 50)
-                    FontSize++;
-
-                e.Handled = true;
-            }
         }
     }
 }
