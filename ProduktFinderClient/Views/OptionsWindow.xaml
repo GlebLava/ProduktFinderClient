@@ -218,7 +218,7 @@
                                     Margin="10"
                                     Style="{StaticResource ToolbarButtonNotRound}"
                                     Command="{Binding ApplyCommand}"
-                                    Click="Anwenden_Click">
+                                    Click="Anwenden_Button_Click">
                         <ContentControl Content="Anwenden"
                                         Margin="4"
                                         VerticalAlignment="Center"/>

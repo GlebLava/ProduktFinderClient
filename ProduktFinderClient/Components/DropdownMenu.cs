@@ -133,6 +133,8 @@ namespace ProduktFinderClient.Components
             }
 
 
+            this.LayoutUpdated += OnLayoutUpdated;
+
             //LostFocus += OnLostFocus;
         }
 
@@ -161,6 +163,17 @@ namespace ProduktFinderClient.Components
                 isToggled = true;
             }
         }
+
+        private void OnLayoutUpdated(object? sender, EventArgs e)
+        {
+            if (popup.IsOpen)
+            {
+                var offset = popup.HorizontalOffset;
+                popup.HorizontalOffset = offset + 1;
+                popup.HorizontalOffset = offset;
+            }
+        }
+
     }
 
 }
