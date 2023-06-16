@@ -5,6 +5,11 @@ using System.Windows.Input;
 
 namespace ProduktFinderClient.Views;
 
+/// <summary>
+/// This component adjusts the FontSize of the whole window it belongs to. 
+/// If more fine grained control is wanted like in MainWindow, the components static methods can be called individually
+/// and subscribed to it's events.
+/// </summary>
 public class GlobalFontSizeComponent
 {
     public static int GlobalFontSize { get; private set; }
