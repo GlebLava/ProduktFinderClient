@@ -132,10 +132,7 @@ namespace ProduktFinderClient.Components
                 this.popup = popup;
             }
 
-
             this.LayoutUpdated += OnLayoutUpdated;
-
-            //LostFocus += OnLostFocus;
         }
 
         public void OnToggle(object sender, RoutedEventArgs e)
