@@ -14,6 +14,8 @@ namespace ProduktFinderClient.Commands
         private readonly Action<string> _SetButtonContent;
         private bool isExecuting = false;
 
+        private bool canExecute = true;
+
         protected CancellationTokenSource? cancellationTokenSource = null;
 
 
@@ -29,7 +31,13 @@ namespace ProduktFinderClient.Commands
         // Since we want the cancel state of the button to always be pressable true is returned
         public bool CanExecute(object? parameter)
         {
-            return true;
+            return canExecute;
+        }
+
+        public void ChangeCanExecute(bool canExecute)
+        {
+            this.canExecute = canExecute;
+            CanExecuteChanged?.Invoke(this, EventArgs.Empty);
         }
 
         public async void Execute(object? parameter)

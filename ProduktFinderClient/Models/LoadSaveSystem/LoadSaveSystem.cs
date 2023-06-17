@@ -157,6 +157,30 @@ public static class LoadSaveSystem
         return File.ReadAllText(authKeyFilePath);
     }
 
+    public static int LoadGlobalFontSize()
+    {
+        configData = LoadData();
+        return configData.GlobalFontSize;
+    }
+
+    public static void SaveGlobalFontSize(int globalFontSize)
+    {
+        configData.GlobalFontSize = globalFontSize;
+        SaveData(configData);
+    }
+
+    public static int LoadPartGridFontSize()
+    {
+        configData = LoadData();
+        return configData.PartGridFontSize;
+    }
+
+    public static void SavePartGridFontSize(int partGridFontSize)
+    {
+        configData.PartGridFontSize = partGridFontSize;
+        SaveData(configData);
+    }
+
 }
 
 

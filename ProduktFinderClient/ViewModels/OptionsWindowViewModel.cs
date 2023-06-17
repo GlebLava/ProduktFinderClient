@@ -2,6 +2,7 @@
 using ProduktFinderClient.Components;
 using ProduktFinderClient.DataTypes;
 using ProduktFinderClient.Models;
+using ProduktFinderClient.Views;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -76,6 +77,19 @@ public class OptionsWindowViewModel : ViewModelBase
     }
     private bool isLicenseKeyHidden = true;
     private string hiddenString = "▬▬▬▬▬▬▬▬▬▬";
+
+    public bool licenseKeyWindowPopupEnabled = true;
+    public bool LicenseKeyWindowPopupEnabled
+    {
+        get { return licenseKeyWindowPopupEnabled; }
+        set { licenseKeyWindowPopupEnabled = value; OnPropertyChanged(nameof(LicenseKeyWindowPopupEnabled)); SaveOptionsConfiguration(); }
+    }
+
+    public bool LicenseKeyWindowPopupDisabled
+    {
+        get { return !licenseKeyWindowPopupEnabled; }
+        set { LicenseKeyWindowPopupEnabled = !value; OnPropertyChanged(nameof(LicenseKeyWindowPopupDisabled)); SaveOptionsConfiguration(); }
+    }
     #endregion
 
     bool constructed = false;
@@ -100,7 +114,9 @@ public class OptionsWindowViewModel : ViewModelBase
 
         actualLicenseKey = optionsConfigData.LicenseKey;
         LicenseKey = actualLicenseKey; // gets handled anyway 
+        LicenseKeyWindowPopupEnabled = optionsConfigData.LicenseKeyWindowPopupEnabled;
         #endregion
+
         ApplyCommand = new FastCommand((o) => ApplyEvent?.Invoke(o, EventArgs.Empty));
         ApplyEvent += SaveOptionConfigurationOnApply;
 
@@ -164,6 +180,10 @@ public class OptionsWindowViewModel : ViewModelBase
     private void SaveOptionConfigurationOnApply(object? o, EventArgs e)
     {
         SaveOptionsConfiguration();
+        if (!isLicenseKeyHidden)
+        {
+            ToggleLicenseKeyVisibility(null);
+        }
     }
 
     private void SaveOptionsConfiguration()
@@ -179,6 +199,7 @@ public class OptionsWindowViewModel : ViewModelBase
         optionsConfigData.FilterPriceLessThenAt = FilterPriceLessThenAt;
         optionsConfigData.PriceLessThenAtAmount = PriceLessThenAtAmount;
         optionsConfigData.LicenseKey = actualLicenseKey;
+        optionsConfigData.LicenseKeyWindowPopupEnabled = LicenseKeyWindowPopupEnabled;
 
         try
         {
@@ -215,5 +236,17 @@ public class OptionsWindowViewModel : ViewModelBase
     {
         if (!isLicenseKeyHidden) ToggleLicenseKeyVisibility(null);
     }
+
+    public void OnWrongLicenseKeyWhileSearching()
+    {
+        if (LicenseKeyWindowPopupEnabled)
+        {
+            LicenseKeyPopup window = new();
+            window.DataContext = this;
+            window.Show();
+        }
+    }
+
+
 }
 

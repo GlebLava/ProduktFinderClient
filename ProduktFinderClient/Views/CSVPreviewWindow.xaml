@@ -26,17 +26,23 @@
             <Setter Property="VerticalAlignment" Value="Center"/>
             <Setter Property="FontSize" Value="{Binding RelativeSource={RelativeSource AncestorType=Window},Path=FontSize}"/>
             <Setter Property="SelectionMode" Value="Single"/>
-            
-        </Style>
 
-        <Style TargetType="ListViewItem">
-            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-            <Setter Property="VerticalAlignment" Value="Stretch"/>
-            <Setter Property="Margin" Value="0"/>
+        </Style>
+        
+        <!-- This part is responsible for disabling the annoying highlight on Listviewitems -->
+        <Style TargetType="{x:Type ListViewItem}">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type ListViewItem}">
+                        <ContentPresenter />
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
         
     </Window.Resources>
-    
+
 
     <Grid Background="{StaticResource ChildwindowBackGroundColor}">
         <DockPanel LastChildFill="True">
@@ -154,6 +160,22 @@
                 <!-- Preview Window -->
 
                 <DockPanel LastChildFill="True" Grid.Row="1" Grid.Column="1">
+
+                    <ListView DockPanel.Dock="Top"
+                              ItemsSource="{Binding Errors}"
+                              MaxHeight="50"
+                              VirtualizingPanel.IsVirtualizing="False"
+                              Background="Transparent"
+                              BorderThickness="0">
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Background="Transparent"
+                                           VerticalAlignment="Center"
+                                           Text="{Binding}"
+                                           Foreground="Red"/>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
 
                     <Label Content="Preview Output:"
                            Foreground="{StaticResource ToolbarForeGroundColor}"

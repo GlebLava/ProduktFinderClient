@@ -65,7 +65,7 @@ namespace ProduktFinderClient.Commands
 
                         ModuleTranslations.ModulesTranslation.TryGetKey(checkableString.AttributeName, out ModuleType moduleType);
                         tasks.Add(RequestHandler.SearchWith(optionsWindowViewModel.GetLicenseKey(), keyword, moduleType, numberSearchResults,
-                            statusHandle, (x) => SearchFinishedCallBack(mainWindowViewModel, x), cancalationToken));
+                            statusHandle, (x) => SearchFinishedCallBack(mainWindowViewModel, x), cancalationToken, optionsWindowViewModel.OnWrongLicenseKeyWhileSearching));
                     }
                 }
 

@@ -17,7 +17,8 @@ public class HttpClientQueue
 
         var handler = new HttpClientHandler
         {
-            ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true
+            ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true,
+            AutomaticDecompression = System.Net.DecompressionMethods.GZip | System.Net.DecompressionMethods.Brotli
         };
 
         _httpClient = new HttpClient(handler);

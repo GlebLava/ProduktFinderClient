@@ -1,0 +1,100 @@
+﻿<Window x:Class="ProduktFinderClient.Views.LicenseKeyPopup"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:ProduktFinderClient.Views"
+        mc:Ignorable="d"
+        Title="LicenseKeyPopup" Height="350" Width="500"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        SizeToContent="WidthAndHeight">
+
+    <WindowChrome.WindowChrome>
+        <WindowChrome CaptionHeight="35"/>
+    </WindowChrome.WindowChrome>
+
+    <Window.Resources>
+
+        <Style x:Key="OptionsHeaderTextblock"  TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource ToolbarForeGroundColor}"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid Background="{StaticResource ChildwindowBackGroundColor}">
+        <DockPanel LastChildFill="False">
+            <!-- ChromeWindow -->
+            <Grid VerticalAlignment="Top" Background="{StaticResource WindowChromeColor}" DockPanel.Dock="Top">
+                <StackPanel VerticalAlignment="Center" 
+                        HorizontalAlignment="Right"
+                        WindowChrome.IsHitTestVisibleInChrome="True"
+                        Orientation="Horizontal"
+                        Height="35">
+                    <Button Width="35" Content="−" Name="MinimizeButton" Style="{StaticResource WindowChromeButton}"
+                            FontWeight="Bold" FontSize="20"/>
+                    <Button Width="35" Content="◻" Name="MaximzeButton" Style="{StaticResource WindowChromeButton}"
+                            FontWeight="Bold" FontSize="20"/>
+                    <Button Width="35" Content="✖" Name="CloseButton" Style="{StaticResource WindowChromeButton}"
+                            FontWeight="Bold" FontSize="15"/>
+                </StackPanel>
+            </Grid>
+            <!-- END ChromeWindow -->
+
+
+            <Label Style="{StaticResource DefaultLabel}"
+                   Content="Der Lizensschlüssel ist falsch!"
+                   FontSize="30"
+                   Margin="20"
+                   DockPanel.Dock="Top"/>
+            <StackPanel Margin="20"
+                        DockPanel.Dock="Top"
+                        Orientation="Vertical">
+                <TextBlock Text="Lizensschlüssel:"
+                                       Margin="0,10,0,0"
+                                       Style="{StaticResource OptionsHeaderTextblock}"/>
+                <StackPanel Orientation="Horizontal">
+                    <TextBox Style="{StaticResource ToolbarTextBox}"
+                                     MinWidth="100"
+                                     Text="{Binding LicenseKey, Mode=TwoWay}"/>
+                    <Button Content="{Binding LicenseKeyVisibilityToggleContent}"
+                                    Command="{Binding LicenseKeyVisibilityToggleCommand}">
+                    </Button>
+                </StackPanel>
+
+                <Label Style="{StaticResource DefaultLabel}"
+                       Content="Den Lizensschlüssel findet man auch unter Optionen"
+                       Margin="0,10,0,0"/>
+            </StackPanel>
+
+            <CheckBox DockPanel.Dock="Left"
+                                  Style="{StaticResource ToolBarCheckBoxLeftWithContentPresenter}"
+                                  Margin="20,20,0,10"
+                                  HorizontalAlignment="Left"
+                                  IsChecked="{Binding LicenseKeyWindowPopupDisabled}">
+                <TextBlock Text="Dieses Fenster nicht mehr anzeigen"
+                           TextWrapping="Wrap"
+                           Foreground="{StaticResource ToolbarForeGroundColor}" 
+                           HorizontalAlignment="Stretch"/>
+            </CheckBox>
+
+
+            <Button DockPanel.Dock="Right"
+                    Margin="10"
+                    Style="{StaticResource ToolbarButtonNotRound}"
+                    Command="{Binding ApplyCommand}"
+                    Height="40"
+                    Click="Anwenden_Button_Click">
+
+                    <ContentControl Content="Anwenden"
+                                        Margin="4"
+                                        VerticalAlignment="Center"/>
+                </Button>
+            
+
+
+        </DockPanel>
+    </Grid>
+</Window>

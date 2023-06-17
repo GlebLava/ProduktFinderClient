@@ -30,6 +30,7 @@ public partial class App : Application
         mainWindow.DataContext = mainWindowViewModel;
 
         mainWindow.Show();
+        mainWindow.Closed += (s, e) => MainWindowCloseEvent?.Invoke(this, e);
         base.OnStartup(e);
     }
 

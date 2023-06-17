@@ -3,6 +3,7 @@ using ProduktFinderClient.Models.ErrorLogging;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
@@ -16,13 +17,14 @@ public class RequestHandler
 {
     private static readonly HttpClientQueue _httpQueue = new(10);
     private static readonly HttpClient _authClient;
-    //private static readonly string _baseUrl = @"https://77.24.97.93:7556/";
-    private static readonly string _baseUrl = @"https://localhost:7321/";
+    private static readonly string _baseUrl = @"https://77.24.97.93:7556/";
+    //private static readonly string _baseUrl = @"https://localhost:7321/";
     //private static readonly string _baseUrl = @"https://192.168.178.21:7320/";
     private static readonly string _getPartsEndpoint = @"getParts/";
     private static readonly string _authorizeEndpoint = @"pfAuth/";
     private static readonly string _unregisterEndpoint = @"pfUnregisterAuth/";
 
+    private static string lastUsedValidLicenseKey = "";
     private static string authKey = "";
     private static SemaphoreSlim authSemaphore = new(1);
 
@@ -37,9 +39,9 @@ public class RequestHandler
         authKey = LoadSaveSystem.LoadAuthKey();
     }
 
-    public static async Task SearchWith(string licenseKey, string keyword, ModuleType api, int numberOfResultsPerAPI, StatusHandle statusHandle, Action<List<Part>?> OnSearchFinishedCallback, CancellationToken cancellationToken)
+    public static async Task SearchWith(string licenseKey, string keyword, ModuleType api, int numberOfResultsPerAPI, StatusHandle statusHandle, Action<List<Part>?> OnSearchFinishedCallback, CancellationToken cancellationToken, Action OnWrongLicenseKeyCallback)
     {
-        var result = await SearchWith(licenseKey, keyword, api, numberOfResultsPerAPI, statusHandle, cancellationToken);
+        var result = await SearchWith(licenseKey, keyword, api, numberOfResultsPerAPI, statusHandle, cancellationToken, OnWrongLicenseKeyCallback);
 
         if (!cancellationToken.IsCancellationRequested)
             OnSearchFinishedCallback(result);
@@ -56,7 +58,7 @@ public class RequestHandler
     /// <param name="statusHandle"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public static async Task<List<Part>?> SearchWith(string licenseKey, string keyword, ModuleType api, int numberOfResultsPerAPI, StatusHandle statusHandle, CancellationToken cancellationToken)
+    public static async Task<List<Part>?> SearchWith(string licenseKey, string keyword, ModuleType api, int numberOfResultsPerAPI, StatusHandle statusHandle, CancellationToken cancellationToken, Action OnWrongLicenseKeyCallback)
     {
         try
         {
@@ -66,6 +68,17 @@ public class RequestHandler
             HttpResponseMessage response;
             try
             {
+                // If a valid licenseKey was used, and it is changed to an invalid one, we want the user to notice immeadiatly
+                // else everything would still work until the authKey runs out
+                if (lastUsedValidLicenseKey != licenseKey)
+                {
+                    // We need to try to unregister because if user changes licenseKey from valid to invalid, we get a new one while the authkey is not updated.
+                    // If we switch back from invalid to the old valid one a new authkey will be requested. Although the old authkey is still regsitered. So the server thinks
+                    // that two instances are open
+                    await Unregister();
+                    throw new HttpRequestException("");
+                }
+
                 SearchWithPostParams input = new() { AuthKey = authKey, KeyWord = keyword, MaxPart = numberOfResultsPerAPI, ModuleType = api };
                 response = await GetPostResponse(_baseUrl + _getPartsEndpoint, input, cancellationToken);
             }
@@ -79,8 +92,8 @@ public class RequestHandler
                 {
                     if (e.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                     {
-                        UpdateUserError(statusHandle, "Linzensschlüssel ist nicht gültig. Man kann den Lizensschlüssen in den Optionen finden", keyword);
-                        MessageBox.Show("Linzensschlüssel ist nicht gültig. Man kann den Lizensschlüssen in den Optionen finden");
+                        UpdateUserError(statusHandle, "Lizensschlüssel ist nicht gültig. Man kann den Lizensschlüssen in den Optionen finden", keyword);
+                        OnWrongLicenseKeyCallback?.Invoke();
                         return null;
                     }
 
@@ -100,7 +113,13 @@ public class RequestHandler
                 response = await GetPostResponse(_baseUrl + _getPartsEndpoint, input, cancellationToken); // Only try once after trying to authenticate
             }
 
+            long? length = response.Content.Headers.ContentLength;
+
             string answer = await response.Content.ReadAsStringAsync();
+
+            long decompressedLength = answer.ToCharArray().Length;
+
+
             ProduktFinderResponse? produktFinderResponse = JsonSerializer.Deserialize<ProduktFinderResponse>(answer, new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
@@ -156,7 +175,12 @@ public class RequestHandler
     private static async Task<HttpResponseMessage> GetPostResponse(string url, object input, CancellationToken cancellationToken)
     {
         HttpRequestMessage request = new(HttpMethod.Post, url);
+        request.Headers.AcceptEncoding.Add(new StringWithQualityHeaderValue("gzip"));
+        request.Headers.AcceptEncoding.Add(new StringWithQualityHeaderValue("br"));
+
         request.Content = new StringContent(JsonSerializer.Serialize(input), Encoding.UTF8, "application/json");
+
+
         HttpResponseMessage? response = await _httpQueue.EnqueueAsync(request, cancellationToken);
 
         if (response is null)
@@ -188,6 +212,7 @@ public class RequestHandler
             response.EnsureSuccessStatusCode();
             authKey = JsonSerializer.Deserialize<AuthResponse>(await response.Content.ReadAsStringAsync())!.AuthKey;
             LoadSaveSystem.SaveAuthKey(authKey);
+            lastUsedValidLicenseKey = licenseKey;
         }
         finally
         {

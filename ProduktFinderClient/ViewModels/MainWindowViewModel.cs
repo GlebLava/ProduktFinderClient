@@ -71,6 +71,7 @@ namespace ProduktFinderClient.ViewModels
             InitLieferanten();
 
             optionsWindowViewModel.ApplyEvent += OnGridSettingsChanged;
+            OnGridSettingsChanged(null, EventArgs.Empty);
 
             OpenOptionsCommand = new OpenOptionsCommand(optionsWindowViewModel);
             SearchCommand = new SearchCommand("Suchen", "Abbrechen", s => SearchButtonContent = s, ClearGrid, OnSearchFinishedCallback, optionsWindowViewModel, this, GetNewStatusHandle);

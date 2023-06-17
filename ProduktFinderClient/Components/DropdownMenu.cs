@@ -132,8 +132,7 @@ namespace ProduktFinderClient.Components
                 this.popup = popup;
             }
 
-
-            //LostFocus += OnLostFocus;
+            this.LayoutUpdated += OnLayoutUpdated;
         }
 
         public void OnToggle(object sender, RoutedEventArgs e)
@@ -161,6 +160,17 @@ namespace ProduktFinderClient.Components
                 isToggled = true;
             }
         }
+
+        private void OnLayoutUpdated(object? sender, EventArgs e)
+        {
+            if (popup.IsOpen)
+            {
+                var offset = popup.HorizontalOffset;
+                popup.HorizontalOffset = offset + 1;
+                popup.HorizontalOffset = offset;
+            }
+        }
+
     }
 
 }
