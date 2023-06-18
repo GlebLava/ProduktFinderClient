@@ -23,6 +23,9 @@
     <Page Update="Components\PartsGrid.xaml">
       <SubType>Designer</SubType>
     </Page>
+    <Page Update="Components\ResizableBorderStyle.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Update="Components\StatusBlock.xaml">
       <SubType>Designer</SubType>
     </Page>

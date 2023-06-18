@@ -78,7 +78,7 @@
             <Border DockPanel.Dock="Top"
                     BorderThickness="0"
                     Background="{Binding Background, ElementName=AllGrid}"
-                    MouseEnter="Tools_MouseEnter"
+                    MouseEnter="Tools_MouseEnter"   
                     MouseLeave="Tools_MouseLeave"
                     HorizontalAlignment="Stretch">
 
@@ -141,8 +141,8 @@
                     </StackPanel>
 
                     <components:StatusBlock x:Name="MainStatusBlock"
-                                            Margin="0,10,20,0"
                                             DockPanel.Dock="Right"
+                                            Margin="0,10,20,0"
                                             Height="{Binding RelativeSource={RelativeSource AncestorType=local:MainWindow},Path=InfoBoxHeight}"
                                             Width="{Binding RelativeSource={RelativeSource AncestorType=local:MainWindow},Path=InfoBoxWidth}"
                                             FontSize="{Binding RelativeSource={RelativeSource AncestorType=local:MainWindow},Path=InfoBoxFontSize}">

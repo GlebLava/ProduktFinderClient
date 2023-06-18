@@ -21,16 +21,19 @@
             <Setter Property="Foreground" Value="{StaticResource FontColor}"/>
             <Setter Property="TextWrapping" Value="NoWrap"/>
         </Style>
-        
     </UserControl.Resources>
 
-    <ScrollViewer x:Name="MainScrollViewer"
+    <local:ResizableBorder>
+
+        <ScrollViewer x:Name="MainScrollViewer"
                   Style="{DynamicResource DarkScrollViewerStyle}"
-                  Margin="0"
-                  HorizontalScrollBarVisibility="Visible">
+                  HorizontalScrollBarVisibility="Visible"
+                  VerticalAlignment="Stretch"
+                  HorizontalAlignment="Stretch">
         <StackPanel x:Name="MainStackPanel"
                     Background="{StaticResource BackGroundColor}"
                     Orientation="Vertical">
         </StackPanel>
     </ScrollViewer>
+    </local:ResizableBorder>
 </UserControl>
