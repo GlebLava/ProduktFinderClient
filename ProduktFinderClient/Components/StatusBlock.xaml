@@ -23,17 +23,21 @@
         </Style>
     </UserControl.Resources>
 
-    <local:ResizableBorder>
 
         <ScrollViewer x:Name="MainScrollViewer"
                   Style="{DynamicResource DarkScrollViewerStyle}"
                   HorizontalScrollBarVisibility="Visible"
                   VerticalAlignment="Stretch"
                   HorizontalAlignment="Stretch">
-        <StackPanel x:Name="MainStackPanel"
-                    Background="{StaticResource BackGroundColor}"
-                    Orientation="Vertical">
-        </StackPanel>
-    </ScrollViewer>
-    </local:ResizableBorder>
+
+                <StackPanel x:Name="MainStackPanel"
+                        Background="{StaticResource BackGroundColor}"
+                        Orientation="Vertical"
+                        VerticalAlignment="Stretch"
+                        HorizontalAlignment="Stretch">
+                </StackPanel>
+
+        </ScrollViewer>
+
+
 </UserControl>

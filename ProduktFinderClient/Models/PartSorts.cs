@@ -17,7 +17,6 @@ namespace ProduktFinderClient.Models
             _sortNameToSortMethod["Verfügbarkeit absteigend"] = SortAvailableDescend;
             _sortNameToSortMethod["Preis Ø aufsteigend"] = SortAveragePriceAscend;
             _sortNameToSortMethod["Preis Ø absteigend"] = SortAveragePriceDescend;
-
         }
 
         public static List<string> GetSortMethodStringTranslations()

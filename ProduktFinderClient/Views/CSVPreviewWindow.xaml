@@ -8,7 +8,8 @@
         mc:Ignorable="d"
         Title="CSVPreviewWindow" Height="450" Width="800"
         WindowStyle="None"
-        AllowsTransparency="True">
+        AllowsTransparency="True"
+        SizeToContent="Width">
 
     <WindowChrome.WindowChrome>
         <WindowChrome CaptionHeight="35"/>
@@ -71,10 +72,10 @@
                 </Grid.ColumnDefinitions>
 
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="40"/>
-                    <RowDefinition Height="0.7*"/>
-                    <RowDefinition Height="40"/>
-                    <RowDefinition Height="10"/>
+                    <RowDefinition Height="1*"/>
+                    <RowDefinition Height="7*"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="0.5*"/>
                 </Grid.RowDefinitions>
 
                 <!-- First Row -->
@@ -111,7 +112,8 @@
 
                     <Label Content="H__Artikelnummer:"
                            VerticalAlignment="Center"
-                           Foreground="{StaticResource ToolbarForeGroundColor}"/>
+                           Foreground="{StaticResource ToolbarForeGroundColor}"
+                           Margin="20,0,0,0"/>
 
                     <components:DropdownMenu x:Name="h_DropDown"
                                              Title="{Binding H_ArtikelnummerTitel}"
@@ -135,7 +137,8 @@
 
                     <Label Content="HCS__Artikelnummer:"
                            VerticalAlignment="Center"
-                           Foreground="{StaticResource ToolbarForeGroundColor}"/>
+                           Foreground="{StaticResource ToolbarForeGroundColor}"
+                           Margin="20,0,0,0"/>
 
                     <components:DropdownMenu x:Name="hcs_DropDown"
                                              Title="{Binding HCS_ArtikelnummerTitel}"

@@ -74,18 +74,32 @@
 
             </Grid>
 
-            <!-- Toolbar -->
-            <Border DockPanel.Dock="Top"
-                    BorderThickness="0"
+            <Grid DockPanel.Dock="Top">
+
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="5"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- Toolbar -->
+                <Border DockPanel.Dock="Top"
                     Background="{Binding Background, ElementName=AllGrid}"
                     MouseEnter="Tools_MouseEnter"   
                     MouseLeave="Tools_MouseLeave"
-                    HorizontalAlignment="Stretch">
+                    VerticalAlignment="Stretch"
+                    Grid.Row="0">
 
-                <DockPanel LastChildFill="False">
-                    <StackPanel Orientation="Horizontal" Name="Tools" Margin="0,10,0,10"
-                                DockPanel.Dock="Left">
-                        <TextBox
+                    <Grid VerticalAlignment="Stretch">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" MinWidth="500"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Orientation="Horizontal" Name="Tools" Margin="0,10,0,10"
+                                DockPanel.Dock="Left"
+                                Grid.Column="0">
+                            <TextBox
                         Name="KeywordSearchBox"
                         Margin="20, 0, 0, 0"
                         Text="{Binding SearchInput}"
@@ -94,14 +108,14 @@
                         Style="{StaticResource ToolbarTextBox}"
                         FontSize="{Binding RelativeSource={RelativeSource AncestorType=Window},Path=FontSize}">
 
-                            <TextBox.InputBindings>
-                                <KeyBinding Key="Enter" 
+                                <TextBox.InputBindings>
+                                    <KeyBinding Key="Enter" 
                                         Command="{Binding SearchCommand}"
                                         CommandParameter="{Binding Text, ElementName=KeywordSearchBox}"/>
-                            </TextBox.InputBindings>
+                                </TextBox.InputBindings>
+                            </TextBox>
 
-                        </TextBox>
-                        <Button
+                            <Button
                             Name="SearchButton"
                             Margin="5, 0, 0, 0"
                             HorizontalAlignment="Left"
@@ -109,13 +123,13 @@
                             Command="{Binding SearchCommand}"
                             CommandParameter="{Binding Text, ElementName=KeywordSearchBox}"
                             Style="{StaticResource ToolbarButton}">
-                            <ContentControl Margin="5" 
+                                <ContentControl Margin="5" 
                                         Content="{Binding SearchButtonContent}"
                                         FontSize="{Binding RelativeSource={RelativeSource AncestorType=Window},Path=FontSize}">
-                            </ContentControl>
-                        </Button>
+                                </ContentControl>
+                            </Button>
 
-                        <components:DropdownMenu 
+                            <components:DropdownMenu 
                                                    x:Name="LieferantenDropDown"
                                                    Foreground="{StaticResource ToolbarForeGroundColor}"
                                                    Background="{StaticResource ToolbarBackGroundColor}"
@@ -129,37 +143,47 @@
                                                    FontSize="{Binding RelativeSource={RelativeSource AncestorType=Window},Path=FontSize}"
                                                    SelectionMode="Single">
 
-                            <components:DropdownMenu.ItemTemplate>
-                                <DataTemplate>
-                                    <CheckBox Content="{Binding Path=AttributeName}"
+                                <components:DropdownMenu.ItemTemplate>
+                                    <DataTemplate>
+                                        <CheckBox Content="{Binding Path=AttributeName}"
                                           IsChecked="{Binding Path=IsChecked}"
                                           Style="{StaticResource ToolBarCheckBox}"/>
-                                </DataTemplate>
-                            </components:DropdownMenu.ItemTemplate>
-                        </components:DropdownMenu>
+                                    </DataTemplate>
+                                </components:DropdownMenu.ItemTemplate>
+                            </components:DropdownMenu>
 
-                    </StackPanel>
+                        </StackPanel>
 
-                    <components:StatusBlock x:Name="MainStatusBlock"
+                        <GridSplitter Grid.Column="0" Width="4" Background="Transparent"/>
+                        <components:StatusBlock x:Name="MainStatusBlock"
                                             DockPanel.Dock="Right"
+                                            Grid.Column="1"
                                             Margin="0,10,20,0"
-                                            Height="{Binding RelativeSource={RelativeSource AncestorType=local:MainWindow},Path=InfoBoxHeight}"
-                                            Width="{Binding RelativeSource={RelativeSource AncestorType=local:MainWindow},Path=InfoBoxWidth}"
-                                            FontSize="{Binding RelativeSource={RelativeSource AncestorType=local:MainWindow},Path=InfoBoxFontSize}">
-                    </components:StatusBlock>
+                                            MinHeight="{Binding RelativeSource={RelativeSource AncestorType=local:MainWindow},Path=InfoBoxHeight}"
+                                            MinWidth="{Binding RelativeSource={RelativeSource AncestorType=local:MainWindow},Path=InfoBoxWidth}"
+                                            FontSize="{Binding RelativeSource={RelativeSource AncestorType=local:MainWindow},Path=InfoBoxFontSize}"
+                                            HorizontalAlignment="Stretch"
+                                            VerticalAlignment="Stretch">
+                        </components:StatusBlock>
 
-                </DockPanel>
-            </Border>
+                    </Grid>
+                </Border>
 
-            <Border CornerRadius="20"
+                <GridSplitter Grid.Row="1" Height="5" HorizontalAlignment="Stretch" ResizeDirection="Rows" Background="Transparent"/>
+
+                <Border CornerRadius="20"
+                    Grid.Row="2"
                     Margin="20"
                     BorderBrush="{StaticResource ToolbarForeGroundColor}"
-                    Background="{StaticResource AllBackGroundColor}">
+                    Background="{StaticResource AllBackGroundColor}"
+                    HorizontalAlignment="Stretch">
 
                 <components:PartsGrid x:Name="MainPartsGrid"
-                                            FontSize="20"
-                                            Margin="10"/>
+                                      FontSize="20"
+                                      Margin="10"/>
             </Border>
+
+            </Grid>
 
         </DockPanel>
     </Grid>
