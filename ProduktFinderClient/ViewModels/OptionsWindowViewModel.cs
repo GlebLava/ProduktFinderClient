@@ -239,12 +239,14 @@ public class OptionsWindowViewModel : ViewModelBase
 
     public void OnWrongLicenseKeyWhileSearching()
     {
+        /*
         if (LicenseKeyWindowPopupEnabled)
         {
             LicenseKeyPopup window = new();
             window.DataContext = this;
             window.Show();
         }
+        */
     }
 
 

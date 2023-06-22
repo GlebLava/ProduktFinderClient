@@ -65,59 +65,11 @@ public class RequestHandler
             keyword = FilterKeyWord(keyword);
             InitializeNewStatusHandle(api, statusHandle, keyword);
 
-            HttpResponseMessage response;
-            try
-            {
-                // If a valid licenseKey was used, and it is changed to an invalid one, we want the user to notice immeadiatly
-                // else everything would still work until the authKey runs out
-                if (lastUsedValidLicenseKey != licenseKey)
-                {
-                    // We need to try to unregister because if user changes licenseKey from valid to invalid, we get a new one while the authkey is not updated.
-                    // If we switch back from invalid to the old valid one a new authkey will be requested. Although the old authkey is still regsitered. So the server thinks
-                    // that two instances are open
-                    await Unregister();
-                    throw new HttpRequestException("");
-                }
+            SearchWithPostParams input = new() { AuthKey = "1234", KeyWord = keyword, MaxPart = numberOfResultsPerAPI, ModuleType = api };
 
-                SearchWithPostParams input = new() { AuthKey = authKey, KeyWord = keyword, MaxPart = numberOfResultsPerAPI, ModuleType = api };
-                response = await GetPostResponse(_baseUrl + _getPartsEndpoint, input, cancellationToken);
-            }
-            catch (HttpRequestException)
-            {
-                try
-                {
-                    await HandleAuthentication(licenseKey);
-                }
-                catch (HttpRequestException e)
-                {
-                    if (e.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-                    {
-                        UpdateUserError(statusHandle, "Lizensschlüssel ist nicht gültig. Man kann den Lizensschlüssen in den Optionen finden", keyword);
-                        OnWrongLicenseKeyCallback?.Invoke();
-                        return null;
-                    }
-
-                    if (e.StatusCode == System.Net.HttpStatusCode.Forbidden)
-                    {
-                        UpdateUserError(statusHandle, "Ein unter diesem Lizenschlüssel registrierter Produktfinder ist schon offen." +
-                                                      " Um diesen benutzen zu können müssen Sie den anderen erstmal schließen", keyword);
-                        MessageBox.Show("Ein unter diesem Lizenschlüssel registrierter Produktfinder ist schon offen." +
-                                                      " Um diesen benutzen zu können müssen Sie den anderen erstmal schließen");
-                        return null;
-                    }
-
-                    throw;
-                }
-                // authKey CAN BE CHANGED BY HANDKEAUTHENTICATION
-                SearchWithPostParams input = new() { AuthKey = authKey, KeyWord = keyword, MaxPart = numberOfResultsPerAPI, ModuleType = api };
-                response = await GetPostResponse(_baseUrl + _getPartsEndpoint, input, cancellationToken); // Only try once after trying to authenticate
-            }
-
-            long? length = response.Content.Headers.ContentLength;
+            HttpResponseMessage response = await GetPostResponse(_baseUrl + _getPartsEndpoint, input, cancellationToken);
 
             string answer = await response.Content.ReadAsStringAsync();
-
-            long decompressedLength = answer.ToCharArray().Length;
 
 
             ProduktFinderResponse? produktFinderResponse = JsonSerializer.Deserialize<ProduktFinderResponse>(answer, new JsonSerializerOptions
