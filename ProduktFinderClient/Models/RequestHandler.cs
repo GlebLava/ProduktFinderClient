@@ -76,28 +76,34 @@ public class RequestHandler
                     // If we switch back from invalid to the old valid one a new authkey will be requested. Although the old authkey is still regsitered. So the server thinks
                     // that two instances are open
                     await Unregister();
-                    throw new HttpRequestException("");
+                    throw new HttpRequestException("", null, System.Net.HttpStatusCode.Unauthorized);
                 }
 
                 SearchWithPostParams input = new() { AuthKey = authKey, KeyWord = keyword, MaxPart = numberOfResultsPerAPI, ModuleType = api };
                 response = await GetPostResponse(_baseUrl + _getPartsEndpoint, input, cancellationToken);
             }
-            catch (HttpRequestException)
+            // This whole block is responsible for the Authentication logic including licenses
+            // Because the API (should) only throws Unauthorized if the license is not registered 
+            // this Exception is rethrown if it is not a status code of Unauthorized
+            catch (HttpRequestException e1)
             {
+                if (e1.StatusCode != System.Net.HttpStatusCode.Unauthorized)
+                    throw e1;
+
                 try
                 {
                     await HandleAuthentication(licenseKey);
                 }
-                catch (HttpRequestException e)
+                catch (HttpRequestException e2)
                 {
-                    if (e.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                    if (e2.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                     {
                         UpdateUserError(statusHandle, "Lizensschlüssel ist nicht gültig. Man kann den Lizensschlüssen in den Optionen finden", keyword);
                         OnWrongLicenseKeyCallback?.Invoke();
                         return null;
                     }
 
-                    if (e.StatusCode == System.Net.HttpStatusCode.Forbidden)
+                    if (e2.StatusCode == System.Net.HttpStatusCode.Forbidden)
                     {
                         UpdateUserError(statusHandle, "Ein unter diesem Lizenschlüssel registrierter Produktfinder ist schon offen." +
                                                       " Um diesen benutzen zu können müssen Sie den anderen erstmal schließen", keyword);

@@ -88,7 +88,7 @@ public class CreateCSVBetragsauskunftCommand : AsyncCancelCommandBase
         if (File.Exists(cparams.savePath))
         {
             if (MessageBox.Show($"Die Datei {cparams.savePath} existiert schon." +
-                $" Soll diese überschrieben werden?", "Achtung", MessageBoxButton.OKCancel, MessageBoxImage.Warning) == MessageBoxResult.No)
+                $" Soll diese überschrieben werden?", "Achtung", MessageBoxButton.OKCancel, MessageBoxImage.Warning) == MessageBoxResult.Cancel)
             {
                 return;
             }
