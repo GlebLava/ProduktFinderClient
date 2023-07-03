@@ -16,28 +16,11 @@ namespace ProduktFinderClient.Models;
 public class RequestHandler
 {
     private static readonly HttpClientQueue _httpQueue = new(10);
-    private static readonly HttpClient _authClient;
-    private static readonly string _baseUrl = @"https://77.24.97.93:7556/";
-    //private static readonly string _baseUrl = @"https://localhost:7321/";
+    //private static readonly string _baseUrl = @"https://77.24.97.93:7556/";
+    public static readonly string _baseUrl = @"https://localhost:7321/";
     //private static readonly string _baseUrl = @"https://192.168.178.21:7320/";
     private static readonly string _getPartsEndpoint = @"getParts/";
-    private static readonly string _authorizeEndpoint = @"pfAuth/";
-    private static readonly string _unregisterEndpoint = @"pfUnregisterAuth/";
 
-    private static string lastUsedValidLicenseKey = "";
-    private static string authKey = "";
-    private static SemaphoreSlim authSemaphore = new(1);
-
-    static RequestHandler()
-    {
-        var handler = new HttpClientHandler
-        {
-            ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true
-        };
-
-        _authClient = new HttpClient(handler);
-        authKey = LoadSaveSystem.LoadAuthKey();
-    }
 
     public static async Task SearchWith(string licenseKey, string keyword, ModuleType api, int numberOfResultsPerAPI, StatusHandle statusHandle, Action<List<Part>?> OnSearchFinishedCallback, CancellationToken cancellationToken, Action OnWrongLicenseKeyCallback)
     {
@@ -64,73 +47,40 @@ public class RequestHandler
         {
             keyword = FilterKeyWord(keyword);
             InitializeNewStatusHandle(api, statusHandle, keyword);
+            SearchWithPostParams input = new() { AuthKey = AuthenticationHandler.AuthKey, KeyWord = keyword, MaxPart = numberOfResultsPerAPI, ModuleType = api };
 
-            HttpResponseMessage response;
-            try
+            HttpResponseMessage response = await GetPostResponse(_baseUrl + _getPartsEndpoint, input, cancellationToken);
+            ProduktFinderResponse? produktFinderResponse = await ExtractProduktFinderResponse(response);
+
+            if (produktFinderResponse is null)
             {
-                // If a valid licenseKey was used, and it is changed to an invalid one, we want the user to notice immeadiatly
-                // else everything would still work until the authKey runs out
-                if (lastUsedValidLicenseKey != licenseKey)
-                {
-                    // We need to try to unregister because if user changes licenseKey from valid to invalid, we get a new one while the authkey is not updated.
-                    // If we switch back from invalid to the old valid one a new authkey will be requested. Although the old authkey is still regsitered. So the server thinks
-                    // that two instances are open
-                    await Unregister();
-                    throw new HttpRequestException("", null, System.Net.HttpStatusCode.Unauthorized);
-                }
-
-                SearchWithPostParams input = new() { AuthKey = authKey, KeyWord = keyword, MaxPart = numberOfResultsPerAPI, ModuleType = api };
-                response = await GetPostResponse(_baseUrl + _getPartsEndpoint, input, cancellationToken);
-            }
-            // This whole block is responsible for the Authentication logic including licenses
-            // Because the API (should) only throws Unauthorized if the license is not registered 
-            // this Exception is rethrown if it is not a status code of Unauthorized
-            catch (HttpRequestException e1)
-            {
-                if (e1.StatusCode != System.Net.HttpStatusCode.Unauthorized)
-                    throw e1;
-
-                try
-                {
-                    await HandleAuthentication(licenseKey);
-                }
-                catch (HttpRequestException e2)
-                {
-                    if (e2.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-                    {
-                        UpdateUserError(statusHandle, "Lizensschlüssel ist nicht gültig. Man kann den Lizensschlüssen in den Optionen finden", keyword);
-                        OnWrongLicenseKeyCallback?.Invoke();
-                        return null;
-                    }
-
-                    if (e2.StatusCode == System.Net.HttpStatusCode.Forbidden)
-                    {
-                        UpdateUserError(statusHandle, "Ein unter diesem Lizenschlüssel registrierter Produktfinder ist schon offen." +
-                                                      " Um diesen benutzen zu können müssen Sie den anderen erstmal schließen", keyword);
-                        MessageBox.Show("Ein unter diesem Lizenschlüssel registrierter Produktfinder ist schon offen." +
-                                                      " Um diesen benutzen zu können müssen Sie den anderen erstmal schließen");
-                        return null;
-                    }
-
-                    throw;
-                }
-                // authKey CAN BE CHANGED BY HANDKEAUTHENTICATION
-                SearchWithPostParams input = new() { AuthKey = authKey, KeyWord = keyword, MaxPart = numberOfResultsPerAPI, ModuleType = api };
-                response = await GetPostResponse(_baseUrl + _getPartsEndpoint, input, cancellationToken); // Only try once after trying to authenticate
+                UpdateUserError(statusHandle, "Bei dem Modul trat ein Problem auf. Keine Antwort bekommen", keyword);
+                return null;
             }
 
-            long? length = response.Content.Headers.ContentLength;
 
-            string answer = await response.Content.ReadAsStringAsync();
-
-            long decompressedLength = answer.ToCharArray().Length;
-
-
-            ProduktFinderResponse? produktFinderResponse = JsonSerializer.Deserialize<ProduktFinderResponse>(answer, new JsonSerializerOptions
+            switch (await AuthenticationHandler.HandleAuthenticationIfNecessary(produktFinderResponse, licenseKey))
             {
-                PropertyNameCaseInsensitive = true
-            });
+                case AuthenticationResult.AUTHENTICATION_FAILED_FORBIDDEN:
+                    UpdateUserError(statusHandle, "Ein unter diesem Lizenschlüssel registrierter Produktfinder ist schon offen." +
+                              " Um diesen benutzen zu können müssen Sie den anderen erstmal schließen", keyword);
+                    MessageBox.Show("Ein unter diesem Lizenschlüssel registrierter Produktfinder ist schon offen." +
+                                                  " Um diesen benutzen zu können müssen Sie den anderen erstmal schließen");
+                    return null;
+                case AuthenticationResult.AUTHENTICATION_FAILED_UNAUTHORIZED:
+                    UpdateUserError(statusHandle, "Lizensschlüssel ist nicht gültig. Man kann den Lizensschlüssen in den Optionen finden", keyword);
+                    OnWrongLicenseKeyCallback?.Invoke();
+                    return null;
+                case AuthenticationResult.AUTHENTICATION_SUCCEEDED:
+                    input.AuthKey = AuthenticationHandler.AuthKey; // We got a new authkey
+                    response = await GetPostResponse(_baseUrl + _getPartsEndpoint, input, cancellationToken);
+                    produktFinderResponse = await ExtractProduktFinderResponse(response);
+                    break;
+                default: // No Authorization needed
+                    break;
+            }
 
+            // Need to check again because in the response could have been rerequested in the authorization block
             if (produktFinderResponse is null)
             {
                 UpdateUserError(statusHandle, "Bei dem Modul trat ein Problem auf. Keine Antwort bekommen", keyword);
@@ -196,34 +146,16 @@ public class RequestHandler
         return response;
     }
 
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="licenseKey"></param>
-    /// <returns>new AuthKey</returns>
-    private static async Task HandleAuthentication(string licenseKey)
-    {
-        if (authSemaphore.CurrentCount == 0)
-        {
-            await authSemaphore.WaitAsync();
-            authSemaphore.Release();
-            return;
-        }
 
-        await authSemaphore.WaitAsync();
-        try
+    private static async Task<ProduktFinderResponse?> ExtractProduktFinderResponse(HttpResponseMessage message)
+    {
+        string answer = await message.Content.ReadAsStringAsync();
+        ProduktFinderResponse? produktFinderResponse = JsonSerializer.Deserialize<ProduktFinderResponse>(answer, new JsonSerializerOptions
         {
-            string url = $"{_baseUrl}{_authorizeEndpoint}{licenseKey}";
-            var response = await _authClient.GetAsync(url);
-            response.EnsureSuccessStatusCode();
-            authKey = JsonSerializer.Deserialize<AuthResponse>(await response.Content.ReadAsStringAsync())!.AuthKey;
-            LoadSaveSystem.SaveAuthKey(authKey);
-            lastUsedValidLicenseKey = licenseKey;
-        }
-        finally
-        {
-            authSemaphore.Release();
-        }
+            PropertyNameCaseInsensitive = true
+        });
+
+        return produktFinderResponse;
     }
 
     private static void InitializeNewStatusHandle(ModuleType moduleType, StatusHandle statusHandle, string keyword)
@@ -239,12 +171,6 @@ public class RequestHandler
     {
         statusHandle.ColorRight = Colors.Red;
         statusHandle.TextRight = " " + message;
-    }
-
-    public static async Task Unregister()
-    {
-        string url = $"{_baseUrl}{_unregisterEndpoint}{authKey}";
-        await _authClient.GetAsync(url);
     }
 
     private static string FilterKeyWord(string keyWord)

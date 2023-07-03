@@ -6,6 +6,12 @@ using System.Threading.Tasks;
 
 namespace ProduktFinderClient.Models
 {
+    public enum ProduktFinderErrorType
+    {
+        NOT_IMPORTANT,
+        NOT_REGISTERED
+    }
+
     public class ProduktFinderResponse
     {
         public ProduktFinderErrorReport? ErrorReport { get; set; }
@@ -15,6 +21,7 @@ namespace ProduktFinderClient.Models
     public class ProduktFinderErrorReport
     {
         public string ErrorDescription { get; set; } = "";
+        public ProduktFinderErrorType ErrorType { get; set; } = ProduktFinderErrorType.NOT_IMPORTANT;
     }
 
     public class Part
