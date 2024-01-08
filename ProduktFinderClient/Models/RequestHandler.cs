@@ -17,7 +17,7 @@ public class RequestHandler
 {
     private static readonly HttpClientQueue _httpQueue = new(10);
     private static readonly HttpClient _authClient;
-    private static readonly string _baseUrl = @"https://77.24.97.93:7556/";
+    private static readonly string _baseUrl = @"http://localhost:7322/";
     //private static readonly string _baseUrl = @"https://localhost:7321/";
     //private static readonly string _baseUrl = @"https://192.168.178.21:7320/";
     private static readonly string _getPartsEndpoint = @"getParts/";
